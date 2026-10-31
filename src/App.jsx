@@ -293,7 +293,16 @@ function NotchedTripCard({ trip, defaultBookingUrl, openInNewTab, onInternalNavi
 }
 
 export default function App() {
-  const [siteConfig, setSiteConfig] = useState(INITIAL_SITE_CONFIG);
+  // ดึง Cache จากเครื่องมาแสดงผลทันทีก่อนรอ Firebase เพื่อกันภาพกระพริบ
+  const [siteConfig, setSiteConfig] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('pajai_siteConfig_cache');
+      if (cached) {
+        try { return JSON.parse(cached); } catch (e) {}
+      }
+    }
+    return INITIAL_SITE_CONFIG;
+  });
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -328,15 +337,16 @@ export default function App() {
 
   // --- 2. ระบบซิงค์ข้อมูลจากฐานข้อมูล Firebase (Fetch & Sync) ---
   useEffect(() => {
-    if (!user) return; // ดึงข้อมูลเฉพาะเมื่อยืนยันตัวตนแล้ว
+    if (!user) return; 
     
     const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'mainConfig');
     const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
       if (docSnap.exists()) {
-        // หากมีข้อมูลบน Cloud ให้เขียนทับข้อมูลเริ่มต้น
-        setSiteConfig(docSnap.data());
+        const cloudData = docSnap.data();
+        setSiteConfig(cloudData);
+        // บันทึกข้อมูลล่าสุดลง Cache ในเครื่อง เพื่อให้รีเฟรชรอบหน้าขึ้นมาทันที
+        localStorage.setItem('pajai_siteConfig_cache', JSON.stringify(cloudData));
       } else {
-        // หากยังไม่มีข้อมูล (เพิ่งรันครั้งแรก) ให้สร้างข้อมูลเริ่มต้นขึ้นบน Cloud
         setDoc(configDocRef, INITIAL_SITE_CONFIG).catch(console.error);
       }
     }, (error) => {
