@@ -18,9 +18,10 @@ import {
   Compass,
   Layers,
   Check,
-  Lock
+  Lock,
+  BookOpen
 } from 'lucide-react';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 
@@ -127,35 +128,32 @@ const INITIAL_SITE_CONFIG = {
   },
   gallerySection: {
     tag: '04 // MOUNTAIN STORIES GALLERY',
-    title: 'รูปแกลลอรี่ — บันทึกความทรงจำบนยอดเขา',
+    title: 'บันทึกการเดินทาง — เรื่องเล่าและภาพความทรงจำบนยอดเขา',
+    desc: 'ภาพบรรยากาศจริงและเรื่องราวความประทับใจจากทริปที่ผ่านมา กดที่การ์ดเพื่ออ่านเรื่องราวแบบเต็มๆ ได้เลย',
     items: [
       {
         id: 1,
-        location: 'CHIANG MAI',
-        name: 'แสงแรกเหนือทะเลหมอก',
+        location: 'จ.เชียงใหม่ • 2,225 MASL',
+        date: 'ทริปธันวาคม',
+        name: 'แสงแรกเหนือทะเลหมอก — ดอยหลวงเชียงดาว',
         image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=1200&q=80',
-        spanClass: 'gallery-item--wide gallery-item--tall',
+        story: 'เช้าวันนั้นอากาศหนาวจัด อุณหภูมิเลขตัวเดียว เราตื่นกันตั้งแต่ตีสี่เพื่อเดินขึ้นมายังจุดชมวิวสูงสุดเพื่อรอแสงแรก...\n\nพอพระอาทิตย์เริ่มแตะขอบฟ้า ทะเลหมอกที่หนาแน่นก็ค่อยๆ เผยตัวให้เห็นเป็นสีทองอร่าม ทุกความเหนื่อยล้าจากการเดินขึ้นเขาเมื่อวานมันหายไปเป็นปลิดทิ้ง มีแต่เสียงกดชัตเตอร์และรอยยิ้มของทุกคนในแก๊ง ธรรมชาติมันมีเวทมนตร์แบบนี้นี่เอง'
       },
       {
         id: 2,
-        location: 'STARRY NIGHT',
-        name: 'บทสนทนาใต้หมู่ดาว',
+        location: 'จ.จันทบุรี • เขาผาหินกูบ',
+        date: 'ทริปพฤศจิกายน',
+        name: 'บทสนทนาใต้หมู่ดาวและมิตรภาพรอบกองไฟ',
         image: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=800&q=80',
-        spanClass: '',
+        story: 'หลังกินมื้อค่ำสุดฟินเสร็จ ทุกคนมานั่งล้อมวงกันหน้าเต็นท์ บนยอดเขาที่ไม่มีสัญญาณโทรศัพท์ ไม่มีแจ้งเตือนเรื่องงานให้กวนใจ\n\nมีแค่เสียงลมหนาวพัดผ่านยอดไม้ และบทสนทนาของคนที่เพิ่งรู้จักกันบนรถตู้เมื่อเช้า แต่กลับคุยกันถูกคอและหัวเราะด้วยกันเหมือนเพื่อนสนิทที่รู้จักกันมานานหลายปี'
       },
       {
         id: 3,
-        location: 'TREKKING',
-        name: 'ก้าวไปพร้อมกัน',
+        location: 'จ.ตาก • เลอกวาเดาะ',
+        date: 'ทริปมกราคม',
+        name: 'ก้าวไปพร้อมกันบนสันเขา — ไม่มีใครถูกทิ้งไว้ข้างหลัง',
         image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=800&q=80',
-        spanClass: '',
-      },
-      {
-        id: 4,
-        location: 'MILKY WAY',
-        name: 'ค่ำคืนดูทางช้างเผือก',
-        image: 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=1200&q=80',
-        spanClass: 'gallery-item--wide',
+        story: 'ช่วงทางชันสุดท้ายก่อนถึงจุดกางเต็นท์ ทุกคนหอบแฮ่กแต่ไม่มีใครยอมแพ้ เสียง "สู้ๆ นะ อีกนิดเดียวถึงแล้ว!" ดังส่งต่อกันมาเป็นทอดๆ จากหัวขบวนถึงท้ายขบวน\n\nการเดินป่ากับพาใจไปเขาสอนให้เรารู้จักจังหวะก้าวเดินของตัวเอง และได้เห็นน้ำใจของเพื่อนร่วมทางที่คอยยื่นมือช่วยดึงกันขึ้นไปจนถึงยอดเขาพร้อมกัน'
       },
     ],
   },
@@ -172,7 +170,7 @@ const INITIAL_SITE_CONFIG = {
   },
 };
 
-// --- Firebase Configuration & Setup ---
+// --- Firebase Configuration & Safe Initialization ---
 const userFirebaseConfig = {
   apiKey: "AIzaSyCyT_8-1QV7KqL_2t-y3BM-8DKdKYDGuqE",
   authDomain: "bookpajai.firebaseapp.com",
@@ -183,11 +181,20 @@ const userFirebaseConfig = {
   appId: "1:367823485461:web:d38bf3d0d358a8b5816c1c"
 };
 
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'pajaipaikhao-app-id';
+let app = null;
+let auth = null;
+let db = null;
+
+try {
+  const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config
+    ? JSON.parse(__firebase_config)
+    : userFirebaseConfig;
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+  db = getFirestore(app);
+} catch (err) {
+  console.warn('Firebase initialization skipped or failed, running in local cache mode.');
+}
 
 // --- รหัสผ่านสำหรับเข้าระบบหลังบ้าน ---
 const SECRET_ADMIN_PASSWORD = 'pajai1234'; 
@@ -289,6 +296,52 @@ function NotchedTripCard({ trip, defaultBookingUrl, openInNewTab, onInternalNavi
   );
 }
 
+// --- การ์ดเรื่องเล่าแกลลอรี่ (Minimalist Story Card อ่านง่ายสบายตา) ---
+function StoryGalleryCard({ item, onReadMore }) {
+  return (
+    <article
+      onClick={() => onReadMore(item)}
+      className="group flex flex-col rounded-[22px] bg-[#14141a] border border-white/[0.07] overflow-hidden cursor-pointer hover:border-[#f97316]/45 transition-all duration-300 hover:-translate-y-1.5 shadow-lg"
+    >
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#1a1a22]">
+        <img
+          src={item.image}
+          alt={item.name}
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#14141a] via-transparent to-transparent opacity-60" />
+        {item.location && (
+          <div className="absolute top-3 left-3">
+            <span className="inline-flex items-center gap-1 rounded-full bg-black/70 backdrop-blur-md border border-white/15 px-3 py-1 text-[10.5px] font-semibold text-white">
+              <MapPin size={11} className="text-[#f97316]" /> {item.location}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col flex-grow p-5 sm:p-6">
+        {item.date && (
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-[#f97316] mb-1.5">
+            {item.date}
+          </div>
+        )}
+        <h3 className="text-[17px] sm:text-[18px] font-bold text-white leading-snug mb-2.5 group-hover:text-[#f97316] transition-colors">
+          {item.name}
+        </h3>
+        <p className="text-[13.5px] sm:text-[14px] text-[#a1a1aa] leading-[1.75] line-clamp-3 mb-4 flex-grow font-normal">
+          {item.story || 'คลิกเพื่ออ่านเรื่องราวความประทับใจจากทริปนี้...'}
+        </p>
+        <div className="pt-3 border-t border-white/[0.07] flex items-center justify-between text-xs font-semibold text-zinc-300 group-hover:text-white">
+          <span className="inline-flex items-center gap-1.5">
+            <BookOpen size={14} className="text-[#f97316]" /> อ่านบันทึกทริปนี้ต่อ
+          </span>
+          <ArrowUpRight size={15} className="text-[#f97316] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export default function App() {
   const [siteConfig, setSiteConfig] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -317,6 +370,7 @@ export default function App() {
 
   // --- Auth & Sync ---
   useEffect(() => {
+    if (!auth) return;
     const initAuth = async () => {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -325,7 +379,7 @@ export default function App() {
           await signInAnonymously(auth);
         }
       } catch (error) {
-        console.error('Firebase Auth Error:', error);
+        // กรณีไม่ได้เปิด Anonymous Auth ใน Firebase Console ระบบจะสลับมาใช้ LocalStorage อัตโนมัติโดยไม่พัง
       }
     };
     initAuth();
@@ -337,7 +391,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!user) return; 
+    if (!user || !db) return; 
     
     const configDocRef = doc(db, 'pajai_landing_settings', 'mainConfig');
     const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
@@ -346,10 +400,10 @@ export default function App() {
         setSiteConfig(cloudData);
         localStorage.setItem('pajai_siteConfig_cache', JSON.stringify(cloudData));
       } else {
-        setDoc(configDocRef, INITIAL_SITE_CONFIG).catch(console.error);
+        setDoc(configDocRef, INITIAL_SITE_CONFIG).catch(() => {});
       }
-    }, (error) => {
-      console.error('Firestore sync error:', error);
+    }, () => {
+      // หากติด Permission Error ระบบจะใช้ข้อมูลจาก Local Cache แทนโดยไม่แสดง Error รบกวนหน้าเว็บ
     });
 
     return () => unsubscribe();
@@ -418,7 +472,7 @@ export default function App() {
     const revealElements = document.querySelectorAll('.reveal-on-scroll');
     revealElements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [activeCategory, siteConfig.tripsSection.items]);
+  }, [activeCategory, siteConfig.tripsSection.items, siteConfig.gallerySection.items]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -437,8 +491,8 @@ export default function App() {
     ? siteConfig.tripsSection.items
     : siteConfig.tripsSection.items.filter((trip) => trip.category === activeCategory);
 
-  const openLightbox = (imgUrl, title) => {
-    setModalState({ isOpen: true, type: 'lightbox', data: { imgUrl, title } });
+  const openLightbox = (item) => {
+    setModalState({ isOpen: true, type: 'gallery', data: item });
   };
 
   const updateSectionField = (sectionKey, field, value) => {
@@ -497,23 +551,69 @@ export default function App() {
     }));
   };
 
-  const triggerSaveNotification = (message = 'อัปเดตข้อมูลลงฐานข้อมูล (Cloud) เรียบร้อยแล้ว!') => {
+  const handleGalleryChange = (itemId, field, value) => {
+    setSiteConfig((prev) => ({
+      ...prev,
+      gallerySection: {
+        ...prev.gallerySection,
+        items: prev.gallerySection.items.map((item) =>
+          item.id === itemId ? { ...item, [field]: value } : item
+        ),
+      },
+    }));
+  };
+
+  const handleAddGalleryItem = () => {
+    const newItem = {
+      id: Date.now(),
+      location: 'จ.เชียงใหม่',
+      date: 'บันทึกทริปล่าสุด',
+      name: 'เรื่องราวการเดินทางครั้งใหม่บนยอดดอย',
+      image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80',
+      story: 'ทุกการเดินทางมีเรื่องราวซ่อนอยู่เสมอ พิมพ์เล่าความประทับใจ มิตรภาพ หรือความสวยงามของธรรมชาติในทริปนี้ให้ทุกคนได้อ่านที่นี่...\n\nสามารถเว้นบรรทัดเพื่อให้อ่านง่ายสบายตาได้เลยครับ'
+    };
+    setSiteConfig((prev) => ({
+      ...prev,
+      gallerySection: {
+        ...prev.gallerySection,
+        items: [newItem, ...prev.gallerySection.items],
+      },
+    }));
+  };
+
+  const handleDeleteGalleryItem = (itemId) => {
+    setSiteConfig((prev) => ({
+      ...prev,
+      gallerySection: {
+        ...prev.gallerySection,
+        items: prev.gallerySection.items.filter((item) => item.id !== itemId),
+      },
+    }));
+  };
+
+  const triggerSaveNotification = (message = 'อัปเดตข้อมูลเรียบร้อยแล้ว!') => {
     setSaveStatus(message);
     setSaveToast(true);
     setTimeout(() => setSaveToast(false), 3000);
   };
 
   const handleSaveToCloud = async () => {
-    if (!user) return;
-    try {
-      const configDocRef = doc(db, 'pajai_landing_settings', 'mainConfig');
-      await setDoc(configDocRef, siteConfig);
-      triggerSaveNotification();
-      setTimeout(() => setAdminOpen(false), 1200);
-    } catch (error) {
-      console.error('Save error:', error);
-      triggerSaveNotification('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+    // บันทึกลง LocalStorage ทันทีเพื่อให้หน้าเว็บจำค่าไว้เสมอ
+    localStorage.setItem('pajai_siteConfig_cache', JSON.stringify(siteConfig));
+    
+    if (user && db) {
+      try {
+        const configDocRef = doc(db, 'pajai_landing_settings', 'mainConfig');
+        await setDoc(configDocRef, siteConfig);
+        triggerSaveNotification('บันทึกข้อมูลลง Cloud & เครื่องเรียบร้อยแล้ว!');
+        setTimeout(() => setAdminOpen(false), 1200);
+        return;
+      } catch (error) {
+        // กรณีติด Firestore Rules จะบันทึกไว้ในเครื่องให้แทนโดยไม่ค้าง
+      }
     }
+    triggerSaveNotification('บันทึกข้อมูลลงเครื่องเรียบร้อยแล้ว! (รอตั้งค่า Rules บน Cloud)');
+    setTimeout(() => setAdminOpen(false), 1200);
   };
 
   const MeridianArrow = () => (
@@ -637,6 +737,9 @@ export default function App() {
         .filter-btn.active { background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%); color: #ffffff; border-color: transparent; }
         .trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 340px)); gap: 22px; justify-content: center; }
 
+        /* STORY GALLERY GRID (Minimalist Editorial Cards) */
+        .stories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 26px; }
+
         /* ABOUT */
         .about-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 32px; align-items: stretch; }
         .about-story { background: linear-gradient(145deg, #1a1a22 0%, #121217 100%); padding: clamp(26px, 3.5vw, 42px); border-radius: var(--radius-lg); border-top: 4px solid var(--orange); display: flex; flex-direction: column; justify-content: space-between; }
@@ -661,18 +764,6 @@ export default function App() {
         .service-title { font-size: 18px; font-weight: 700; margin: 0 0 10px 0; color: white; }
         .service-desc { color: #a1a1aa; line-height: 1.6; font-size: 14px; margin: 0; }
 
-        /* GALLERY */
-        .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 220px; gap: 16px; }
-        .gallery-item { position: relative; overflow: hidden; border-radius: var(--radius-lg); cursor: pointer; transition: transform 0.4s ease; }
-        .gallery-item:hover { transform: translateY(-5px); }
-        .gallery-item--wide { grid-column: span 2; }
-        .gallery-item--tall { grid-row: span 2; }
-        .gallery-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
-        .gallery-item:hover .gallery-img { transform: scale(1.06); }
-        .gallery-caption { position: absolute; inset: auto 10px 10px 10px; padding: 12px 14px; border-radius: 14px; background: rgba(10, 10, 14, 0.82); backdrop-filter: blur(8px); color: white; transition: all 0.3s ease; }
-        .gallery-loc { color: var(--orange); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; }
-        .gallery-name { font-size: 14px; font-weight: 600; margin-top: 2px; }
-
         /* CONTACT */
         .contact-wrapper { display: flex; justify-content: center; }
         .contact-info { width: 100%; max-width: 820px; background: #1b1b22; padding: clamp(26px, 4vw, 40px); border-radius: var(--radius-xl); border-top: 5px solid var(--orange); }
@@ -681,11 +772,6 @@ export default function App() {
         .channel-icon { width: 42px; height: 42px; border-radius: 12px; background: rgba(249, 115, 22, 0.14); color: var(--orange); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         
         .footer { background: #060608; color: #a1a1aa; padding: 36px var(--pad-x); text-align: center; font-size: 13.5px; border-top: 1px solid rgba(255,255,255,0.06); }
-
-        /* MODAL */
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(12px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { background: #18181f; padding: 28px; border-radius: var(--radius-lg); position: relative; width: 100%; max-width: 780px; color: white; }
-        .modal-close { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: none; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; }
 
         @media (max-width: 820px) {
           .nav__links, .btn--nav.desktop { display: none; }
@@ -696,8 +782,7 @@ export default function App() {
           .headline { font-size: clamp(1.9rem, 8vw, 2.8rem); }
           .lede { padding: 22px 18px; font-size: 14px; margin-top: 28px; }
           .trips-grid { grid-template-columns: minmax(250px, 330px); }
-          .about-grid, .gallery-grid, .stats-grid { grid-template-columns: 1fr; }
-          .gallery-item--wide { grid-column: span 1; }
+          .stories-grid, .about-grid, .stats-grid { grid-template-columns: 1fr; }
           .logo { position: relative; left: 0; transform: none; flex-direction: row; gap: 8px; }
           .logo:hover { transform: none; }
         }
@@ -919,25 +1004,21 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================= 4. รูปแกลลอรี่ ================= */}
+      {/* ================= 4. รูปแกลลอรี่ & เรื่องเล่าการเดินทาง ================= */}
       <section id="gallery" className="section section--dark">
         <div className="container-box">
           <div className="sec-header reveal-on-scroll">
             <span className="sec-tag">{siteConfig.gallerySection.tag}</span>
             <h2 className="sec-title">{siteConfig.gallerySection.title}</h2>
+            <p className="sec-desc">
+              {siteConfig.gallerySection.desc || 'ภาพบรรยากาศจริงและเรื่องราวความประทับใจจากทริปที่ผ่านมา กดที่การ์ดเพื่ออ่านเรื่องราวแบบเต็มๆ ได้เลย'}
+            </p>
           </div>
-          <div className="gallery-grid reveal-on-scroll">
+
+          <div className="stories-grid">
             {siteConfig.gallerySection.items.map((item) => (
-              <div
-                key={item.id}
-                className={`gallery-item ${item.spanClass || ''}`}
-                onClick={() => openLightbox(item.image, item.name)}
-              >
-                <img className="gallery-img" src={item.image} alt={item.name} />
-                <div className="gallery-caption">
-                  {item.location && <div className="gallery-loc">{item.location}</div>}
-                  <div className="gallery-name">{item.name}</div>
-                </div>
+              <div key={item.id} className="reveal-on-scroll">
+                <StoryGalleryCard item={item} onReadMore={openLightbox} />
               </div>
             ))}
           </div>
@@ -1014,7 +1095,6 @@ export default function App() {
         </strong>{' '}
         — {siteConfig.hero.headlineLine1} {siteConfig.hero.headlinePrefix}{siteConfig.hero.headlineAccent}
         <br /><br />
-        {/* เปลี่ยนปุ่มตั้งค่าเว็บไซต์เป็นข้อความลิขสิทธิ์ที่คลิกดับเบิลคลิกได้ */}
         <span 
           onDoubleClick={() => setShowLoginModal(true)} 
           className="cursor-default select-none transition-colors hover:text-zinc-400"
@@ -1104,7 +1184,7 @@ export default function App() {
                 { id: 'brand', label: '1. โลโก้ & ลิงก์จองทริป', icon: ImageIcon },
                 { id: 'hero', label: '2. ข้อความหน้าแรก (Hero)', icon: Type },
                 { id: 'trips', label: '3. จัดการทริป (01)', icon: Compass },
-                { id: 'sections', label: '4. เนื้อหาส่วนอื่น ๆ (02-05)', icon: Layers },
+                { id: 'sections', label: '4. แกลลอรี่ & เนื้อหา (02-05)', icon: Layers },
               ].map((t) => {
                 const Icon = t.icon;
                 return (
@@ -1461,9 +1541,119 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB 4 */}
+              {/* TAB 4 (Sections 02-05 + Gallery Story Manager) */}
               {adminTab === 'sections' && (
                 <div className="space-y-6">
+                  {/* 04 GALLERY STORY MANAGER */}
+                  <div className="rounded-2xl border border-[#f97316]/40 bg-[#181820] p-5 space-y-4">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
+                          04 // จัดการแกลลอรี่ & บทความเรื่องเล่าจากทริป
+                        </h3>
+                        <p className="text-xs text-zinc-400 mt-1 mb-0">เพิ่มรูปภาพและเขียนบทความเล่าเรื่องราวความประทับใจแบบอ่านง่ายสบายตา</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddGalleryItem}
+                        className="flex items-center gap-1.5 rounded-xl bg-[#f97316] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#ea580c] transition border-0 cursor-pointer"
+                      >
+                        <Plus size={15} /> เพิ่มเรื่องเล่าทริปใหม่
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-zinc-400 mb-1">หัวข้อส่วนแกลลอรี่ (Title)</label>
+                        <input
+                          type="text"
+                          value={siteConfig.gallerySection.title}
+                          onChange={(e) => updateSectionField('gallerySection', 'title', e.target.value)}
+                          className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-zinc-400 mb-1">คำโปรย (Description)</label>
+                        <input
+                          type="text"
+                          value={siteConfig.gallerySection.desc || ''}
+                          onChange={(e) => updateSectionField('gallerySection', 'desc', e.target.value)}
+                          className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      {siteConfig.gallerySection.items.map((item, index) => (
+                        <div key={item.id} className="rounded-xl border border-white/10 bg-[#121217] p-4 space-y-3">
+                          <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                            <span className="text-xs font-bold text-[#f97316]">เรื่องเล่าทริปที่ #{index + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteGalleryItem(item.id)}
+                              className="text-xs text-red-400 hover:text-red-300 transition bg-transparent border-0 cursor-pointer flex items-center gap-1"
+                            >
+                              <Trash2 size={13} /> ลบรายการนี้
+                            </button>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="md:col-span-2">
+                              <label className="block text-xs text-zinc-400 mb-1">URL รูปภาพปก</label>
+                              <input
+                                type="text"
+                                value={item.image}
+                                onChange={(e) => handleGalleryChange(item.id, 'image', e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-zinc-400 mb-1">สถานที่ / ยอดเขา</label>
+                              <input
+                                type="text"
+                                value={item.location || ''}
+                                onChange={(e) => handleGalleryChange(item.id, 'location', e.target.value)}
+                                placeholder="เช่น จ.เชียงใหม่ • ดอยหลวงเชียงดาว"
+                                className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-zinc-400 mb-1">ช่วงเวลา / ชื่อรอบทริป</label>
+                              <input
+                                type="text"
+                                value={item.date || ''}
+                                onChange={(e) => handleGalleryChange(item.id, 'date', e.target.value)}
+                                placeholder="เช่น ทริปธันวาคม"
+                                className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <label className="block text-xs text-zinc-400 mb-1">ชื่อเรื่อง / พาดหัวความทรงจำ</label>
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={(e) => handleGalleryChange(item.id, 'name', e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <label className="block text-xs text-emerald-400 font-semibold mb-1">
+                                เนื้อหาบทความเล่าเรื่อง (สามารถกด Enter เว้นย่อหน้าให้อ่านสบายตาได้เลย)
+                              </label>
+                              <textarea
+                                rows={4}
+                                value={item.story || ''}
+                                onChange={(e) => handleGalleryChange(item.id, 'story', e.target.value)}
+                                placeholder="เขียนเล่าบรรยากาศความประทับใจจากทริปนี้..."
+                                className="w-full rounded-lg border border-emerald-500/30 bg-[#101015] px-3.5 py-2.5 text-sm text-white leading-relaxed"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* 02 ABOUT */}
                   <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-3">
                     <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
@@ -1539,7 +1729,7 @@ export default function App() {
                   </div>
 
                   {/* 05 CONTACT */}
-                  <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-3">
+                  <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-3 mt-6">
                     <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
                       05 // ข้อมูลการติดต่อ (Contact Us)
                     </h3>
@@ -1611,7 +1801,7 @@ export default function App() {
                     <Check size={15} /> {saveStatus}
                   </span>
                 ) : (
-                  <span>การแก้ไขทั้งหมดจะถูกบันทึกลงฐานข้อมูล (Firebase) ถาวร</span>
+                  <span>การแก้ไขทั้งหมดจะถูกบันทึกลงฐานข้อมูลและในเครื่อง</span>
                 )}
               </div>
               <div className="flex items-center gap-2.5">
@@ -1629,15 +1819,72 @@ export default function App() {
         </div>
       )}
 
-      {/* Lightbox Modal สำหรับรูปแกลลอรี่ */}
-      {modalState.isOpen && (
-        <div className="modal-backdrop" onClick={() => setModalState({ isOpen: false })}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setModalState({ isOpen: false })}><X size={18} /></button>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#f97316', marginBottom: '6px' }}>PAJAIPAIKHAO GALLERY</div>
-            <h3 style={{ margin: '0 0 14px 0', fontSize: '18px' }}>{modalState.data?.title}</h3>
-            <img src={modalState.data?.imgUrl} alt={modalState.data?.title} style={{ width: '100%', maxHeight: '70vh', objectFit: 'cover', borderRadius: '14px' }} />
-          </div>
+      {/* ================= ARTICLE READER MODAL (เรียงบนลงล่าง อ่านง่ายสบายตา 100%) ================= */}
+      {modalState.isOpen && modalState.type === 'gallery' && (
+        <div
+          className="fixed inset-0 z-[260] flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md"
+          onClick={() => setModalState({ isOpen: false, type: null, data: null })}
+        >
+          <article
+            className="relative flex flex-col w-full max-w-2xl max-h-[90vh] rounded-[26px] bg-[#14141a] text-white border border-white/10 shadow-[0_25px_70px_rgba(0,0,0,0.75)] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setModalState({ isOpen: false, type: null, data: null })}
+              className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/65 text-white backdrop-blur-md border border-white/20 hover:bg-[#f97316] hover:border-[#f97316] transition cursor-pointer"
+              aria-label="ปิดหน้าต่าง"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="overflow-y-auto">
+              <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] bg-[#0e0e12]">
+                <img
+                  src={modalState.data?.image}
+                  alt={modalState.data?.name}
+                  className="w-full h-full object-cover block"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#14141a] via-transparent to-transparent opacity-80" />
+              </div>
+
+              <div className="px-6 py-6 sm:px-10 sm:py-8">
+                <div className="flex flex-wrap items-center gap-2.5 mb-3">
+                  {modalState.data?.location && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f97316]/15 border border-[#f97316]/30 px-3 py-1 text-xs font-semibold text-[#f97316]">
+                      <MapPin size={12} /> {modalState.data.location}
+                    </span>
+                  )}
+                  {modalState.data?.date && (
+                    <span className="text-xs font-medium text-zinc-400">
+                      • {modalState.data.date}
+                    </span>
+                  )}
+                </div>
+
+                <h2 className="text-xl sm:text-2xl md:text-[26px] font-bold text-white leading-snug mb-5">
+                  {modalState.data?.name}
+                </h2>
+
+                <div className="h-[1px] w-full bg-white/10 mb-6" />
+
+                <div className="text-[15.5px] sm:text-[16.5px] text-zinc-200 leading-[1.95] whitespace-pre-line font-normal tracking-wide">
+                  {modalState.data?.story || 'ไม่มีเนื้อหาเพิ่มเติมสำหรับรูปภาพนี้'}
+                </div>
+
+                <div className="mt-8 pt-5 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-xs text-zinc-400">บันทึกการเดินทางโดย PaJaiPaiKhao</span>
+                  <button
+                    type="button"
+                    onClick={() => setModalState({ isOpen: false, type: null, data: null })}
+                    className="rounded-full bg-white/10 hover:bg-[#f97316] px-5 py-2 text-xs font-semibold text-white transition cursor-pointer border-0"
+                  >
+                    ปิดหน้าต่างอ่าน
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
         </div>
       )}
     </div>
