@@ -17,27 +17,28 @@ import {
   Type,
   Compass,
   Layers,
-  Check
+  Check,
+  Lock
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 
-const DISC = 46; // ขนาดวงกลมลูกศร (กะทัดรัด มินิมอล)
-const BLOCK = 58; // ขนาดบล็อกรอยบาก
-const FILLET = 20; // ความโค้งมนตรงรอยต่อ
+const DISC = 46; 
+const BLOCK = 58; 
+const FILLET = 20; 
 
-// --- ข้อมูลเริ่มต้นของเว็บไซต์ทั้งหมด (สามารถแก้ไขผ่านระบบหลังบ้านได้) ---
+// --- ข้อมูลเริ่มต้นของเว็บไซต์ทั้งหมด ---
 const INITIAL_SITE_CONFIG = {
   brand: {
     namePrefix: 'PAJAI',
     nameHighlight: 'PAIKHAO',
-    logoImageUrl: '', // หากเว้นว่างจะใช้โลโก้ SVG ต้นฉบับ หากใส่ URL รูปจะแสดงรูปแทน
+    logoImageUrl: '', 
     heroWallpaper: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1920&q=80',
   },
   booking: {
     navButtonText: 'ติดต่อจองทริป',
-    primaryBookingUrl: '#contact', // ใส่ URL ระบบจองที่นั่งในอนาคตได้ เช่น https://booking.pajaipaikhao.com
+    primaryBookingUrl: '#contact', 
     openInNewTab: false,
   },
   hero: {
@@ -66,7 +67,7 @@ const INITIAL_SITE_CONFIG = {
         price: '฿4,590',
         priceSub: '/ ท่าน (รวมรถตู้ VIP)',
         image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=80',
-        bookingUrl: '', // หากเว้นว่างจะใช้ลิงก์จองหลัก (primaryBookingUrl)
+        bookingUrl: '', 
       },
       {
         id: 2,
@@ -182,14 +183,15 @@ const userFirebaseConfig = {
   appId: "1:367823485461:web:d38bf3d0d358a8b5816c1c"
 };
 
-// ใช้ Config จากระบบ Platform หากมี มิฉะนั้นจะใช้ Config ส่วนตัวของผู้ใช้
 const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'pajaipaikhao-app-id';
 
-// --- คอมโพเนนต์ NotchedTripCard สไตล์มินิมอล (ขนาดกะทัดรัด) ---
+// --- รหัสผ่านสำหรับเข้าระบบหลังบ้าน ---
+const SECRET_ADMIN_PASSWORD = 'pajai1234'; 
+
 function NotchedTripCard({ trip, defaultBookingUrl, openInNewTab, onInternalNavigate }) {
   const surface = "#121216";
   const tone = "grayscale transition-all duration-500 group-hover:grayscale-0 focus-visible:grayscale-0";
@@ -213,7 +215,6 @@ function NotchedTripCard({ trip, defaultBookingUrl, openInNewTab, onInternalNavi
       style={{ textDecoration: 'none' }}
     >
       <div className="relative">
-        {/* รูปภาพหน้าปก (Cover) ขนาดกะทัดรัด */}
         <div className="relative aspect-[16/10] overflow-hidden rounded-[20px] bg-[#1a1a20]">
           <img
             src={trip.image}
@@ -222,7 +223,6 @@ function NotchedTripCard({ trip, defaultBookingUrl, openInNewTab, onInternalNavi
           />
           <div aria-hidden className="absolute inset-0 bg-black/25 transition-opacity duration-500 group-hover:bg-black/10" />
           
-          {/* ป้าย Badge มุมบน */}
           {trip.badge && (
             <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-3 z-10">
               <span className="rounded-full border border-white/20 bg-black/65 px-2.5 py-1 text-[10px] font-semibold tracking-wider text-white backdrop-blur-md">
@@ -232,7 +232,6 @@ function NotchedTripCard({ trip, defaultBookingUrl, openInNewTab, onInternalNavi
           )}
         </div>
 
-        {/* รอยบากมุมขวาล่าง (Notch) */}
         <div
           aria-hidden
           className="absolute bottom-0 right-0 z-10"
@@ -255,7 +254,6 @@ function NotchedTripCard({ trip, defaultBookingUrl, openInNewTab, onInternalNavi
           />
         ))}
 
-        {/* ปุ่มลูกศรซ้อนในรอยบาก */}
         <span
           aria-hidden
           className="absolute bottom-0 right-0 z-20 flex items-center justify-center rounded-full bg-white/10 text-white transition-all duration-300 group-hover:scale-105 group-hover:bg-[#f97316] group-hover:text-white"
@@ -265,7 +263,6 @@ function NotchedTripCard({ trip, defaultBookingUrl, openInNewTab, onInternalNavi
         </span>
       </div>
 
-      {/* เนื้อหาด้านล่างการ์ด */}
       <div className="mt-3.5 flex flex-col flex-grow px-1.5">
         <h3 className="text-[16px] font-bold tracking-tight text-white mb-1.5 leading-snug line-clamp-2">{trip.title}</h3>
         <p className="text-[12.5px] leading-relaxed text-[#a1a1aa] flex-grow mb-3 line-clamp-2">{trip.desc}</p>
@@ -293,7 +290,6 @@ function NotchedTripCard({ trip, defaultBookingUrl, openInNewTab, onInternalNavi
 }
 
 export default function App() {
-  // ดึง Cache จากเครื่องมาแสดงผลทันทีก่อนรอ Firebase เพื่อกันภาพกระพริบ
   const [siteConfig, setSiteConfig] = useState(() => {
     if (typeof window !== 'undefined') {
       const cached = localStorage.getItem('pajai_siteConfig_cache');
@@ -303,18 +299,23 @@ export default function App() {
     }
     return INITIAL_SITE_CONFIG;
   });
+
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [modalState, setModalState] = useState({ isOpen: false, type: null, data: null });
 
-  // States สำหรับระบบหลังบ้าน (Admin CMS)
+  // States สำหรับระบบหลังบ้าน
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [loginError, setLoginError] = useState(false);
+  
   const [adminOpen, setAdminOpen] = useState(false);
   const [adminTab, setAdminTab] = useState('brand');
   const [saveToast, setSaveToast] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
 
-  // --- 1. ระบบยืนยันตัวตน Firebase (Auth Effect) ---
+  // --- Auth & Sync ---
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -335,16 +336,14 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- 2. ระบบซิงค์ข้อมูลจากฐานข้อมูล Firebase (Fetch & Sync) ---
   useEffect(() => {
     if (!user) return; 
     
-    const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'mainConfig');
+    const configDocRef = doc(db, 'pajai_landing_settings', 'mainConfig');
     const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
       if (docSnap.exists()) {
         const cloudData = docSnap.data();
         setSiteConfig(cloudData);
-        // บันทึกข้อมูลล่าสุดลง Cache ในเครื่อง เพื่อให้รีเฟรชรอบหน้าขึ้นมาทันที
         localStorage.setItem('pajai_siteConfig_cache', JSON.stringify(cloudData));
       } else {
         setDoc(configDocRef, INITIAL_SITE_CONFIG).catch(console.error);
@@ -356,19 +355,17 @@ export default function App() {
     return () => unsubscribe();
   }, [user]);
 
+  // --- Functions ---
   const smoothScrollTo = (targetId) => {
     const id = targetId.replace('#', '');
     const targetEl = document.getElementById(id);
     if (!targetEl) return;
-
     const startPosition = window.pageYOffset;
     const targetPosition = targetEl.getBoundingClientRect().top + startPosition;
     const distance = targetPosition - startPosition;
     const duration = 900;
     let startTime = null;
-
     const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
     const animation = (currentTime) => {
       if (startTime === null) startTime = currentTime;
       const timeElapsed = currentTime - startTime;
@@ -378,7 +375,6 @@ export default function App() {
         requestAnimationFrame(animation);
       }
     };
-
     requestAnimationFrame(animation);
   };
 
@@ -388,13 +384,23 @@ export default function App() {
     smoothScrollTo(targetId);
   };
 
-  // ฟังก์ชันจัดการปุ่มจองหลัก (รองรับทั้ง #contact และลิงก์เว็บจองภายนอก)
   const handlePrimaryBookingClick = (e) => {
     const url = siteConfig.booking.primaryBookingUrl.trim();
     if (url.startsWith('#')) {
       e.preventDefault();
       if (mobileMenuOpen) setMobileMenuOpen(false);
       smoothScrollTo(url);
+    }
+  };
+
+  const handleAdminLogin = () => {
+    if (adminPassword === SECRET_ADMIN_PASSWORD) {
+      setShowLoginModal(false);
+      setAdminPassword('');
+      setLoginError(false);
+      setAdminOpen(true);
+    } else {
+      setLoginError(true);
     }
   };
 
@@ -419,12 +425,13 @@ export default function App() {
       if (e.key === 'Escape') {
         if (mobileMenuOpen) setMobileMenuOpen(false);
         if (modalState.isOpen) setModalState({ isOpen: false, type: null, data: null });
+        if (showLoginModal) { setShowLoginModal(false); setAdminPassword(''); setLoginError(false); }
         if (adminOpen) setAdminOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mobileMenuOpen, modalState.isOpen, adminOpen]);
+  }, [mobileMenuOpen, modalState.isOpen, adminOpen, showLoginModal]);
 
   const filteredTrips = activeCategory === 'all'
     ? siteConfig.tripsSection.items
@@ -434,7 +441,6 @@ export default function App() {
     setModalState({ isOpen: true, type: 'lightbox', data: { imgUrl, title } });
   };
 
-  // --- Helpers สำหรับอัปเดตข้อมูลในระบบหลังบ้าน ---
   const updateSectionField = (sectionKey, field, value) => {
     setSiteConfig((prev) => ({
       ...prev,
@@ -466,9 +472,9 @@ export default function App() {
       location: 'จ.เชียงใหม่',
       duration: '2 วัน 1 คืน',
       title: 'ชื่อทริปใหม่ — แก้ไขรายละเอียดได้ในระบบหลังบ้าน',
-      desc: 'คำอธิบายไฮไลต์ของทริปบรรยากาศธรรมชาติ गางเต็นท์ดูดาว สูดหมอกยามเช้าพร้อมทีมงานดูแลตลอดเส้นทาง',
+      desc: 'คำอธิบายไฮไลต์ของทริปบรรยากาศธรรมชาติ',
       price: '฿3,590',
-      priceSub: '/ ท่าน (รวมรถตู้ VIP)',
+      priceSub: '/ ท่าน',
       image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=80',
       bookingUrl: '',
     };
@@ -497,11 +503,10 @@ export default function App() {
     setTimeout(() => setSaveToast(false), 3000);
   };
 
-  // --- 3. ฟังก์ชันบันทึกข้อมูลขึ้น Firebase เมื่อกดบันทึกในหน้า Admin ---
   const handleSaveToCloud = async () => {
     if (!user) return;
     try {
-      const configDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'siteConfig', 'mainConfig');
+      const configDocRef = doc(db, 'pajai_landing_settings', 'mainConfig');
       await setDoc(configDocRef, siteConfig);
       triggerSaveNotification();
       setTimeout(() => setAdminOpen(false), 1200);
@@ -626,7 +631,7 @@ export default function App() {
         .sec-title { font-size: clamp(1.75rem, 3.2vw, 2.75rem); font-weight: 700; color: #ffffff; margin: 0; }
         .sec-desc { max-width: 650px; font-size: 15px; color: var(--gray-muted); line-height: 1.65; margin: 0; }
 
-        /* TRIPS GRID (ปรับขนาดให้กะทัดรัด สมส่วนทั้งคอมและมือถือ) */
+        /* TRIPS GRID */
         .filter-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
         .filter-btn { padding: 10px 20px; font-size: 13px; font-weight: 600; border-radius: var(--radius-pill); background: #1a1a20; color: #d4d4d8; border: 1px solid rgba(255, 255, 255, 0.08); cursor: pointer; transition: all 0.25s ease; }
         .filter-btn.active { background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%); color: #ffffff; border-color: transparent; }
@@ -719,7 +724,6 @@ export default function App() {
             <a className="nav__link" href="#contact" onClick={(e) => handleNavClick(e, '#contact')}>ติดต่อเรา</a>
           </nav>
 
-          {/* โลโก้ (รองรับทั้งรูปภาพจากระบบหลังบ้าน และ SVG ต้นฉบับ) */}
           <a className="logo" href="#top" aria-label="PaJaiPaiKhao" onClick={(e) => handleNavClick(e, '#top')}>
             {siteConfig.brand.logoImageUrl.trim() !== '' ? (
               <img src={siteConfig.brand.logoImageUrl} alt={siteConfig.brand.namePrefix} className="logo__img" />
@@ -738,7 +742,6 @@ export default function App() {
             </span>
           </a>
 
-          {/* ปุ่มติดต่อจองทริป (รองรับการใส่ลิงก์เว็บจองที่นั่งภายนอกได้) */}
           <a
             className="btn btn--nav desktop"
             href={siteConfig.booking.primaryBookingUrl || '#contact'}
@@ -816,7 +819,7 @@ export default function App() {
         </div>
       </main>
 
-      {/* ================= 1. ทริปต่าง ๆ (OUR TRIPS) ================= */}
+      {/* ================= 1. ทริปต่าง ๆ ================= */}
       <section id="trips" className="section section--light">
         <div className="container-box">
           <div className="sec-header reveal-on-scroll">
@@ -853,7 +856,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================= 2. รู้จักกับเรา (ABOUT US) ================= */}
+      {/* ================= 2. รู้จักกับเรา ================= */}
       <section id="about" className="section section--dark">
         <div className="container-box">
           <div className="sec-header reveal-on-scroll">
@@ -894,7 +897,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================= 3. บริการอื่น ๆ (OTHER SERVICES) ================= */}
+      {/* ================= 3. บริการอื่น ๆ ================= */}
       <section id="services" className="section section--gray">
         <div className="container-box">
           <div className="sec-header reveal-on-scroll">
@@ -916,7 +919,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================= 4. รูปแกลลอรี่ (GALLERY) ================= */}
+      {/* ================= 4. รูปแกลลอรี่ ================= */}
       <section id="gallery" className="section section--dark">
         <div className="container-box">
           <div className="sec-header reveal-on-scroll">
@@ -941,7 +944,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================= 5. ติดต่อเรา (CONTACT US) ================= */}
+      {/* ================= 5. ติดต่อเรา ================= */}
       <section id="contact" className="section section--light">
         <div className="container-box">
           <div className="sec-header reveal-on-scroll">
@@ -955,7 +958,6 @@ export default function App() {
                 {siteConfig.contactSection.boxTitle}
               </h3>
 
-              {/* หากตั้งค่าลิงก์จองภายนอกไว้ จะแสดงปุ่มลัดไปยังเว็บจองที่นั่งด้วย */}
               {!isPrimaryBookingHash && (
                 <div className="mb-4">
                   <a
@@ -1005,30 +1007,69 @@ export default function App() {
         </div>
       </section>
 
+      {/* ================= FOOTER ================= */}
       <footer className="footer">
         <strong style={{ color: '#ffffff' }}>
           {siteConfig.brand.namePrefix}<span style={{ color: '#f97316' }}>{siteConfig.brand.nameHighlight}</span>
         </strong>{' '}
         — {siteConfig.hero.headlineLine1} {siteConfig.hero.headlinePrefix}{siteConfig.hero.headlineAccent}
         <br /><br />
-        <span>{siteConfig.contactSection.footerText}</span>
-        <div style={{ marginTop: '14px' }}>
-          <button
-            type="button"
-            onClick={() => setAdminOpen(true)}
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#f97316] transition cursor-pointer bg-transparent border-0"
-          >
-            <Settings size={13} /> ตั้งค่าเว็บไซต์ (Admin CMS)
-          </button>
-        </div>
+        {/* เปลี่ยนปุ่มตั้งค่าเว็บไซต์เป็นข้อความลิขสิทธิ์ที่คลิกดับเบิลคลิกได้ */}
+        <span 
+          onDoubleClick={() => setShowLoginModal(true)} 
+          className="cursor-default select-none transition-colors hover:text-zinc-400"
+          title="PaJaiPaiKhao"
+        >
+          {siteConfig.contactSection.footerText}
+        </span>
       </footer>
+
+      {/* ================= LOGIN MODAL สำหรับเข้าระบบหลังบ้าน ================= */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={() => { setShowLoginModal(false); setAdminPassword(''); setLoginError(false); }}>
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#121217] p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#f97316]/10 text-[#f97316]">
+              <Lock size={24} />
+            </div>
+            <h3 className="mb-1 text-lg font-bold text-white">Admin Access</h3>
+            <p className="mb-5 text-sm text-zinc-400">กรุณาใส่รหัสผ่านเพื่อเข้าสู่ระบบจัดการเว็บไซต์</p>
+            
+            <input 
+              type="password" 
+              value={adminPassword}
+              onChange={(e) => { setAdminPassword(e.target.value); setLoginError(false); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAdminLogin(); }}
+              className={`w-full rounded-xl border bg-[#0a0a0c] px-4 py-3 text-sm text-white focus:outline-none transition ${loginError ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#f97316]'}`}
+              placeholder="••••••••"
+              autoFocus
+            />
+            {loginError && <p className="mt-2 text-xs text-red-400">รหัสผ่านไม่ถูกต้อง! กรุณาลองใหม่อีกครั้ง</p>}
+            
+            <div className="mt-6 flex justify-end gap-3">
+              <button 
+                type="button"
+                onClick={() => { setShowLoginModal(false); setAdminPassword(''); setLoginError(false); }} 
+                className="rounded-lg px-4 py-2 text-sm font-semibold text-zinc-400 hover:text-white transition cursor-pointer"
+              >
+                ยกเลิก
+              </button>
+              <button 
+                type="button"
+                onClick={handleAdminLogin} 
+                className="rounded-lg bg-[#f97316] px-5 py-2 text-sm font-bold text-white hover:bg-[#ea580c] transition cursor-pointer shadow-lg"
+              >
+                เข้าสู่ระบบ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ================= ระบบหลังบ้าน (ADMIN CMS DRAWER) ================= */}
       {adminOpen && (
         <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm">
           <div className="relative flex h-[92vh] max-h-[850px] w-full max-w-4xl flex-col rounded-2xl bg-[#121217] text-white shadow-[0_0_50px_rgba(0,0,0,0.6)] border border-white/10 overflow-hidden">
             
-            {/* ส่วนหัว Admin */}
             <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 bg-[#181820]">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f97316] text-white">
@@ -1058,7 +1099,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* แถบเมนูเลือกหมวดหมู่การตั้งค่า */}
             <div className="flex overflow-x-auto border-b border-white/10 bg-[#15151c] px-6 py-2.5 gap-2">
               {[
                 { id: 'brand', label: '1. โลโก้ & ลิงก์จองทริป', icon: ImageIcon },
@@ -1084,10 +1124,9 @@ export default function App() {
               })}
             </div>
 
-            {/* เนื้อหาฟอร์มการตั้งค่า */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               
-              {/* TAB 1: โลโก้ & ลิงก์จองทริป */}
+              {/* TAB 1 */}
               {adminTab === 'brand' && (
                 <div className="space-y-6">
                   <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-4">
@@ -1183,7 +1222,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB 2: ข้อความหน้าแรก (Hero Section) */}
+              {/* TAB 2 */}
               {adminTab === 'hero' && (
                 <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-4">
                   <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
@@ -1257,7 +1296,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB 3: จัดการทริป (01) */}
+              {/* TAB 3 */}
               {adminTab === 'trips' && (
                 <div className="space-y-6">
                   <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-4">
@@ -1422,7 +1461,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* TAB 4: เนื้อหาส่วนอื่น ๆ (02 - 05) */}
+              {/* TAB 4 */}
               {adminTab === 'sections' && (
                 <div className="space-y-6">
                   {/* 02 ABOUT */}
@@ -1565,7 +1604,6 @@ export default function App() {
               )}
             </div>
 
-            {/* ส่วนท้าย Admin */}
             <div className="flex items-center justify-between border-t border-white/10 bg-[#181820] px-6 py-4">
               <div className="text-xs text-zinc-400">
                 {saveToast ? (
