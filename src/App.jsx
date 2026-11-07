@@ -21,7 +21,8 @@ import {
   Lock,
   BookOpen,
   Upload,
-  Loader2
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
@@ -105,28 +106,48 @@ const INITIAL_SITE_CONFIG = {
   },
   aboutSection: {
     tag: '02 // ABOUT PAJAIPAIKHAO',
-    title: 'รู้จักกับเรา — เพื่อนร่วมทางสายลุยที่คุณไว้ใจได้',
-    desc: 'มากกว่าทัวร์เดินป่า คือคอมมูนิตี้ของคนที่หลงใหลในกลิ่นฝน เสียงลม และทะเลหมอก เราเปลี่ยนเรื่องยุ่งยากของการเตรียมตัวให้เป็นเรื่องง่าย',
+    title: 'รู้จักกับเรา — เพื่อนเดินทางสายตะลอนที่จะพาใจคุณไปแตะขอบฟ้า',
+    desc: 'เพราะเราเข้าใจดีว่าเวลาใจมันเรียกร้อง... ร่างกายก็ต้องการธรรมชาติติดสปีด! เราคือเพื่อนร่วมทางที่จะช่วยดูแลทุกขั้นตอน เปลี่ยนความยุ่งยากให้เป็นเรื่องง่าย เพื่อให้คุณดื่มด่ำกับธรรมชาติได้อย่างเต็มที่',
     quoteMain: '“ไม่ว่าคุณจะเป็นมือใหม่หัดเดินเขาคนเดียว หรือสายแบกเป้ตัวจริง ',
-    quoteHighlight: 'เราดูแลคุณเหมือนเพื่อนร่วมแก๊ง',
-    storyText: 'PaJaiPaiKhao ก่อตั้งขึ้นจากกลุ่มเพื่อนนักเดินทางที่เข้าใจดีว่าการจะออกไปสัมผัสธรรมชาติสักครั้ง ต้องจัดการทั้งเรื่องรถเดินทาง การจองคิวอุทยาน ลูกหาบ และอาหาร เราจึงออกแบบระบบจัดการทริปแบบครบวงจร',
-    stats: [
-      { num: '140', suffix: '+', label: 'ทริปที่เดินทางแล้ว' },
-      { num: '4.8k', suffix: '+', label: 'สมาชิกครอบครัว' },
-      { num: '100', suffix: '%', label: 'มาตรฐานความปลอดภัย' },
-    ],
+    quoteHighlight: 'เราดูแลคุณเหมือนเพื่อนร่วมแก๊ง”',
+    storyText: 'PaJaiPaiKhao ก่อตั้งขึ้นจากกลุ่มเพื่อนสายตะลอนที่เข้าใจดีว่า เวลาที่ใจมันเรียกร้องอยากออกไปสัมผัสธรรมชาติ แต่ต้องเจอความยุ่งยากทั้งเรื่องการเดินทาง จองคิวอุทยาน ลูกหาบ หรือการเตรียมอาหาร... เราจึงออกแบบระบบจัดการทริปแบบครบวงจร ไม่ว่าจะเดินทางคนเดียวอยากหาเพื่อนใหม่ หรือยกแก๊งกันมาลุย แค่ปักวันแล้วพาใจไปเขา ที่เหลือปล่อยให้เป็นหน้าที่เรา!',
+    featuredImage: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1000&q=80',
+    imageCaption: 'บรรยากาศแคมป์ไฟและมิตรภาพบนยอดดอย — PaJaiPaiKhao Community',
     pillars: [
-      { num: '01', title: 'มาคนเดียวก็ไม่เหงา', desc: 'กว่า 65% ของลูกทริปเดินทางมาคนเดียว สตาฟของเราเชื่อมบรรยากาศให้ทุกคนได้เพื่อนใหม่' },
-      { num: '02', title: 'ปลอดภัยสูงสุด', desc: 'ทีมงานผ่านการอบรมปฐมพยาบาล (Wilderness First Aid) พร้อมวิทยุสื่อสาร' },
+      { id: 1, num: '01', title: 'มาคนเดียวก็ไม่เหงา', desc: 'กว่า 65% ของลูกทริปเดินทางมาคนเดียว สตาฟของเราเป็นกันเอง ช่วยเชื่อมบรรยากาศให้ทุกคนได้เพื่อนใหม่กลับไปทุกทริป' },
+      { id: 2, num: '02', title: 'ดูแลครบ จบในที่เดียว', desc: 'จัดการให้ครบตั้งแต่รถตู้ VIP จองคิวอุทยาน ประสานงานลูกหาบ ไปจนถึงมื้ออาหารร้อนๆ บนยอดเขา' },
+      { id: 3, num: '03', title: 'ปลอดภัยและอุ่นใจสูงสุด', desc: 'ทีมสตาฟมีประสบการณ์ชำนาญเส้นทาง ผ่านการอบรมปฐมพยาบาลเบื้องต้น พร้อมอุปกรณ์ช่วยเหลือและวิทยุสื่อสารตลอดทริป' },
     ],
   },
   servicesSection: {
     tag: '03 // OTHER SERVICES',
-    title: 'บริการอื่น ๆ — ครบเครื่องทุกเรื่องแคมป์ปิ้ง',
-    desc: 'นอกจากทริปจอยประจำสัปดาห์ เรายังพร้อมซัพพอร์ตกลุ่มเพื่อน องค์กร และนักเดินทางด้วยบริการเสริมระดับมืออาชีพ',
+    title: 'บริการอื่น ๆ — ครบเครื่องทุกเรื่องแคมป์ปิ้งและเดินป่า',
+    desc: 'นอกจากทริปจอยประจำสัปดาห์ เรายังพร้อมซัพพอร์ตกลุ่มเพื่อน องค์กร และนักเดินทางด้วยบริการเสริมแบบครบวงจร',
     items: [
-      { id: 1, title: 'จัดทริปส่วนตัว & ยกแก๊ง', desc: 'อยากไปเฉพาะแก๊งเพื่อนสนิท เราออกแบบเส้นทาง วันเวลา และเมนูอาหารบนเขาให้ตามใจคุณ 100%' },
-      { id: 2, title: 'เช่าอุปกรณ์แคมป์ปิ้ง', desc: 'ไม่ต้องลงทุนซื้อของแพง เรามีอุปกรณ์เดินป่าแบรนด์มาตรฐานให้เช่า ทำความสะอาดฆ่าเชื้อทุกครั้ง' },
+      { 
+        id: 1, 
+        tag: 'PRIVATE GROUP & OUTING',
+        title: 'จัดทริปส่วนตัว & ยกแก๊งพาใจไปลุย', 
+        desc: 'เมื่อใจทั้งแก๊งเรียกร้องพร้อมกัน! เราพร้อมออกแบบเส้นทาง วันเวลา และเมนูอาหารบนเขาตามใจคุณ 100% ให้ทริปของแก๊งคุณลุยสนุก ชิล และเป็นกันเองที่สุด',
+        image: 'https://images.unsplash.com/photo-1533873984035-25970ab07461?auto=format&fit=crop&w=900&q=80',
+        bullets: [
+          'เลือกวันเดินทางและเส้นทางได้เองตามจังหวะของแก๊งคุณ',
+          'ปรับแต่งเมนูอาหารแคมป์ปิ้งและจุดแวะพักได้ตามต้องการ',
+          'มีทีมสตาฟดูแลส่วนตัวพร้อมถ่ายภาพบรรยากาศตลอดทริป'
+        ]
+      },
+      { 
+        id: 2, 
+        tag: 'CAMPING GEAR RENTAL',
+        title: 'เช่าอุปกรณ์แคมป์ปิ้ง & เดินป่า', 
+        desc: 'พร้อมพาใจไปเขาแบบเบากระเป๋า ไม่ต้องลงทุนซื้อของแพง! เรามีอุปกรณ์แคมป์ปิ้งและเดินป่าแบรนด์มาตรฐานให้เช่า คลีนทำความสะอาดฆ่าเชื้อทุกครั้ง อุ่นใจและพร้อมลุยได้ทันที',
+        image: 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=900&q=80',
+        bullets: [
+          'เต็นท์ ถุงนอน แผ่นรองนอน เป้เดินป่า และไม้เทรกกิ้งคุณภาพสูง',
+          'ซักอบทำความสะอาดและฆ่าเชื้อโรคทุกชิ้นหลังจบแต่ละทริป',
+          'รับ-คืนอุปกรณ์สะดวกที่จุดนัดพบวันเดินทาง ไม่ต้องแบกมาเอง'
+        ]
+      },
     ],
   },
   gallerySection: {
@@ -165,10 +186,20 @@ const INITIAL_SITE_CONFIG = {
     title: 'ติดต่อเรา — พร้อมพาใจไปเขากับเราหรือยัง?',
     boxTag: 'PAJAIPAIKHAO BASECAMP',
     boxTitle: 'ใจมันเรียกร้อง... ทักหาเราแล้วแพ็คกระเป๋าเลย!',
-    line: '@PaJaiPaiKhao',
-    phone: '089-998-7654',
+    line: '@Pajaipaikhao',
+    lineUrl: 'https://lin.ee/',
+    facebook: 'พาใจไปเขา PaJaiPaiKhao',
+    facebookUrl: 'https://facebook.com/',
+    instagram: 'pajaipaikhao',
+    instagramUrl: 'https://instagram.com/',
+    tiktok: '@pajaipaikhao',
+    tiktokUrl: 'https://tiktok.com/',
+    phone: '093-791-9144',
+    phoneUrl: 'tel:0937919144',
+    email: 'pajaipaikhao.dev@gmail.com',
+    emailUrl: 'mailto:pajaipaikhao.dev@gmail.com',
     pickup: 'BTS หมอชิต',
-    email: 'hello@pajaipaikhao.com',
+    pickupUrl: 'https://maps.google.com/',
     footerText: '© 2026 PaJaiPaiKhao Adventure Co., Ltd.',
   },
 };
@@ -717,6 +748,124 @@ export default function App() {
     }));
   };
 
+  // --- ฟังก์ชันจัดการส่วน 02 About Pillars (เพิ่ม/ลบ/แก้ไข จุดเด่น) ---
+  const handlePillarChange = (index, field, value) => {
+    setSiteConfig((prev) => {
+      const updated = [...(prev.aboutSection.pillars || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      return {
+        ...prev,
+        aboutSection: { ...prev.aboutSection, pillars: updated },
+      };
+    });
+  };
+
+  const handleAddPillar = () => {
+    setSiteConfig((prev) => {
+      const current = prev.aboutSection.pillars || [];
+      const nextNum = String(current.length + 1).padStart(2, '0');
+      const newPillar = {
+        id: Date.now(),
+        num: nextNum,
+        title: 'หัวข้อจุดเด่นใหม่',
+        desc: 'คำอธิบายรายละเอียดจุดเด่นของเรา...',
+      };
+      return {
+        ...prev,
+        aboutSection: { ...prev.aboutSection, pillars: [...current, newPillar] },
+      };
+    });
+  };
+
+  const handleDeletePillar = (index) => {
+    setSiteConfig((prev) => ({
+      ...prev,
+      aboutSection: {
+        ...prev.aboutSection,
+        pillars: prev.aboutSection.pillars.filter((_, idx) => idx !== index),
+      },
+    }));
+  };
+
+  // --- ฟังก์ชันจัดการส่วน 03 Services (เพิ่ม/ลบ/แก้ไข บริการ และ Bullet points) ---
+  const handleServiceChange = (index, field, value) => {
+    setSiteConfig((prev) => {
+      const updated = [...(prev.servicesSection.items || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      return {
+        ...prev,
+        servicesSection: { ...prev.servicesSection, items: updated },
+      };
+    });
+  };
+
+  const handleAddService = () => {
+    setSiteConfig((prev) => {
+      const newService = {
+        id: Date.now(),
+        tag: 'OUR SERVICE',
+        title: 'ชื่อบริการใหม่',
+        desc: 'รายละเอียดบริการเสริมสำหรับลูกทริป...',
+        image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=900&q=80',
+        bullets: ['รายละเอียดเพิ่มเติมข้อที่ 1', 'รายละเอียดเพิ่มเติมข้อที่ 2'],
+      };
+      return {
+        ...prev,
+        servicesSection: {
+          ...prev.servicesSection,
+          items: [...(prev.servicesSection.items || []), newService],
+        },
+      };
+    });
+  };
+
+  const handleDeleteService = (index) => {
+    setSiteConfig((prev) => ({
+      ...prev,
+      servicesSection: {
+        ...prev.servicesSection,
+        items: prev.servicesSection.items.filter((_, idx) => idx !== index),
+      },
+    }));
+  };
+
+  const handleServiceBulletChange = (serviceIndex, bulletIndex, value) => {
+    setSiteConfig((prev) => {
+      const updatedItems = [...(prev.servicesSection.items || [])];
+      const bullets = [...(updatedItems[serviceIndex].bullets || [])];
+      bullets[bulletIndex] = value;
+      updatedItems[serviceIndex] = { ...updatedItems[serviceIndex], bullets };
+      return {
+        ...prev,
+        servicesSection: { ...prev.servicesSection, items: updatedItems },
+      };
+    });
+  };
+
+  const handleAddServiceBullet = (serviceIndex) => {
+    setSiteConfig((prev) => {
+      const updatedItems = [...(prev.servicesSection.items || [])];
+      const bullets = [...(updatedItems[serviceIndex].bullets || []), 'รายละเอียดเพิ่มเติม...'];
+      updatedItems[serviceIndex] = { ...updatedItems[serviceIndex], bullets };
+      return {
+        ...prev,
+        servicesSection: { ...prev.servicesSection, items: updatedItems },
+      };
+    });
+  };
+
+  const handleDeleteServiceBullet = (serviceIndex, bulletIndex) => {
+    setSiteConfig((prev) => {
+      const updatedItems = [...(prev.servicesSection.items || [])];
+      const bullets = (updatedItems[serviceIndex].bullets || []).filter((_, i) => i !== bulletIndex);
+      updatedItems[serviceIndex] = { ...updatedItems[serviceIndex], bullets };
+      return {
+        ...prev,
+        servicesSection: { ...prev.servicesSection, items: updatedItems },
+      };
+    });
+  };
+
   const triggerSaveNotification = (message = 'อัปเดตข้อมูลเรียบร้อยแล้ว!') => {
     setSaveStatus(message);
     setSaveToast(true);
@@ -1083,7 +1232,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================= 2. รู้จักกับเรา ================= */}
+      {/* ================= 2. รู้จักกับเรา (Minimalist Editorial Design) ================= */}
       <section id="about" className="section section--dark">
         <div className="container-box">
           <div className="sec-header reveal-on-scroll">
@@ -1091,40 +1240,63 @@ export default function App() {
             <h2 className="sec-title">{siteConfig.aboutSection.title}</h2>
             <p className="sec-desc">{siteConfig.aboutSection.desc}</p>
           </div>
-          <div className="about-grid reveal-on-scroll">
-            <div className="about-story">
-              <div>
-                <h3 className="about-quote">
-                  {siteConfig.aboutSection.quoteMain}
-                  <span>{siteConfig.aboutSection.quoteHighlight}”</span>
-                </h3>
-                <p className="about-p">{siteConfig.aboutSection.storyText}</p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start reveal-on-scroll">
+            {/* ฝั่งซ้าย: ภาพถ่ายบรรยากาศจริงสไตล์นิตยสาร + คำบรรยายใต้ภาพ */}
+            <div className="lg:col-span-5 flex flex-col gap-3">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[24px] bg-[#16161d] border border-white/10 shadow-2xl">
+                <img
+                  src={siteConfig.aboutSection.featuredImage || 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=1000&q=80'}
+                  alt={siteConfig.aboutSection.title}
+                  className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                {siteConfig.aboutSection.imageCaption && (
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <span className="inline-block rounded-xl bg-black/65 backdrop-blur-md border border-white/15 px-3.5 py-2 text-xs text-zinc-200 leading-relaxed">
+                      {siteConfig.aboutSection.imageCaption}
+                    </span>
+                  </div>
+                )}
               </div>
-              <div className="stats-grid">
-                {siteConfig.aboutSection.stats.map((st, idx) => (
-                  <div key={idx} className="stat-box">
-                    <div className="stat-num">{st.num}<span>{st.suffix}</span></div>
-                    <div className="stat-label">{st.label}</div>
+            </div>
+
+            {/* ฝั่งขวา: เรื่องราว (Storytelling) + รายการจุดเด่นแบบ Editorial List */}
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-8 lg:pl-2">
+              <div className="space-y-5 border-b border-white/10 pb-8">
+                <blockquote className="text-xl sm:text-2xl md:text-[26px] font-bold text-white leading-[1.45] m-0">
+                  {siteConfig.aboutSection.quoteMain}
+                  <span className="text-[#f97316]">{siteConfig.aboutSection.quoteHighlight}</span>
+                </blockquote>
+                <p className="text-[15px] sm:text-[16px] text-zinc-300 leading-[1.85] whitespace-pre-line m-0 font-normal">
+                  {siteConfig.aboutSection.storyText}
+                </p>
+              </div>
+
+              {/* รายการจุดเด่น (Pillars) สไตล์ Minimalist คั่นด้วยเส้นบางๆ */}
+              <div className="divide-y divide-white/10">
+                {(siteConfig.aboutSection.pillars || []).map((pillar, idx) => (
+                  <div key={pillar.id || idx} className="py-5 first:pt-0 last:pb-0 flex items-start gap-5 group">
+                    <span className="text-xs font-mono font-bold tracking-widest text-[#f97316] bg-[#f97316]/10 border border-[#f97316]/25 rounded-lg px-2.5 py-1.5 shrink-0 mt-0.5">
+                      {pillar.num || String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <div className="space-y-1.5">
+                      <h4 className="text-[17px] font-bold text-white m-0 group-hover:text-[#f97316] transition-colors">
+                        {pillar.title}
+                      </h4>
+                      <p className="text-[14px] text-zinc-400 leading-[1.7] m-0">
+                        {pillar.desc}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
-            <div className="about-pillars">
-              {siteConfig.aboutSection.pillars.map((pillar, idx) => (
-                <div key={idx} className="pillar-card">
-                  <div className="pillar-num">{pillar.num}</div>
-                  <div>
-                    <h4 className="pillar-title">{pillar.title}</h4>
-                    <p style={{ color: '#a1a1aa', fontSize: '13.5px', margin: 0, lineHeight: 1.6 }}>{pillar.desc}</p>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ================= 3. บริการอื่น ๆ ================= */}
+      {/* ================= 3. บริการอื่น ๆ (Minimalist Editorial Service Cards) ================= */}
       <section id="services" className="section section--gray">
         <div className="container-box">
           <div className="sec-header reveal-on-scroll">
@@ -1132,14 +1304,54 @@ export default function App() {
             <h2 className="sec-title">{siteConfig.servicesSection.title}</h2>
             <p className="sec-desc">{siteConfig.servicesSection.desc}</p>
           </div>
-          <div className="services-grid reveal-on-scroll">
-            {siteConfig.servicesSection.items.map((srv, idx) => (
-              <div key={srv.id || idx} className="service-card">
-                <div className="service-icon">
-                  {idx % 2 === 0 ? <ShieldCheck size={24} /> : <MapPin size={24} />}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-7 reveal-on-scroll">
+            {(siteConfig.servicesSection.items || []).map((srv, idx) => (
+              <div
+                key={srv.id || idx}
+                className="group flex flex-col rounded-[24px] bg-[#14141a] border border-white/[0.07] overflow-hidden hover:border-[#f97316]/40 transition-all duration-300 shadow-xl"
+              >
+                {srv.image && (
+                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#1b1b22]">
+                    <img
+                      src={srv.image}
+                      alt={srv.title}
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#14141a] via-transparent to-transparent opacity-80" />
+                    <div className="absolute top-3.5 left-3.5">
+                      <span className="inline-block rounded-full bg-black/70 backdrop-blur-md border border-white/15 px-3 py-1 text-[10px] font-bold tracking-wider uppercase text-[#f97316]">
+                        {srv.tag || `SERVICE 0${idx + 1}`}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-col flex-grow p-6 sm:p-7">
+                  {!srv.image && (
+                    <span className="text-[11px] font-bold tracking-wider uppercase text-[#f97316] mb-1.5">
+                      {srv.tag || `SERVICE 0${idx + 1}`}
+                    </span>
+                  )}
+                  <h3 className="text-xl font-bold text-white mb-2.5 leading-snug">
+                    {srv.title}
+                  </h3>
+                  <p className="text-[14.5px] text-zinc-300 leading-[1.75] mb-5 whitespace-pre-line">
+                    {srv.desc}
+                  </p>
+
+                  {/* รายละเอียดเพิ่มเติม (Bullets) */}
+                  {srv.bullets && srv.bullets.length > 0 && (
+                    <ul className="mt-auto space-y-2.5 border-t border-white/10 pt-4 list-none p-0 m-0">
+                      {srv.bullets.map((b, bIdx) => (
+                        <li key={bIdx} className="flex items-start gap-2.5 text-[13.5px] text-zinc-400 leading-relaxed">
+                          <CheckCircle2 size={15} className="text-[#f97316] shrink-0 mt-0.5" />
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <h3 className="service-title">{srv.title}</h3>
-                <p className="service-desc">{srv.desc}</p>
               </div>
             ))}
           </div>
@@ -1167,7 +1379,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ================= 5. ติดต่อเรา ================= */}
+      {/* ================= 5. ติดต่อเรา (คลิกไปที่ลิงก์ Social / โทร / อีเมล ได้ทันที) ================= */}
       <section id="contact" className="section section--light">
         <div className="container-box">
           <div className="sec-header reveal-on-scroll">
@@ -1188,6 +1400,7 @@ export default function App() {
                     target={siteConfig.booking.openInNewTab ? '_blank' : undefined}
                     rel={siteConfig.booking.openInNewTab ? 'noopener noreferrer' : undefined}
                     className="inline-flex items-center gap-2 rounded-full bg-[#f97316] px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-[#ea580c] transition"
+                    style={{ textDecoration: 'none' }}
                   >
                     <span>เข้าสู่เว็บไซต์ระบบจองที่นั่งออนไลน์</span>
                     <ExternalLink size={16} />
@@ -1195,35 +1408,111 @@ export default function App() {
                 </div>
               )}
 
-              <div className="contact-channels">
-                <div className="channel-item">
-                  <div className="channel-icon"><MessageCircle size={20} /></div>
-                  <div>
-                    <div style={{ color: '#a1a1aa', fontSize: '11px' }}>LINE OFFICIAL</div>
-                    <div style={{ fontWeight: 'bold', fontSize: '14.5px' }}>{siteConfig.contactSection.line}</div>
-                  </div>
-                </div>
-                <div className="channel-item">
-                  <div className="channel-icon"><Phone size={20} /></div>
-                  <div>
-                    <div style={{ color: '#a1a1aa', fontSize: '11px' }}>HOTLINE</div>
-                    <div style={{ fontWeight: 'bold', fontSize: '14.5px' }}>{siteConfig.contactSection.phone}</div>
-                  </div>
-                </div>
-                <div className="channel-item">
-                  <div className="channel-icon"><MapPin size={20} /></div>
-                  <div>
-                    <div style={{ color: '#a1a1aa', fontSize: '11px' }}>จุดนัดพบหลัก</div>
-                    <div style={{ fontWeight: 'bold', fontSize: '14.5px' }}>{siteConfig.contactSection.pickup}</div>
-                  </div>
-                </div>
-                <div className="channel-item">
-                  <div className="channel-icon"><Mail size={20} /></div>
-                  <div>
-                    <div style={{ color: '#a1a1aa', fontSize: '11px' }}>EMAIL</div>
-                    <div style={{ fontWeight: 'bold', fontSize: '14.5px' }}>{siteConfig.contactSection.email}</div>
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-7">
+                {[
+                  {
+                    id: 'line',
+                    label: 'LINE OFFICIAL',
+                    value: siteConfig.contactSection.line,
+                    url: siteConfig.contactSection.lineUrl,
+                    icon: <MessageCircle size={20} />,
+                  },
+                  {
+                    id: 'facebook',
+                    label: 'FACEBOOK',
+                    value: siteConfig.contactSection.facebook || 'พาใจไปเขา PaJaiPaiKhao',
+                    url: siteConfig.contactSection.facebookUrl,
+                    icon: (
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'instagram',
+                    label: 'INSTAGRAM',
+                    value: siteConfig.contactSection.instagram || 'pajaipaikhao',
+                    url: siteConfig.contactSection.instagramUrl,
+                    icon: (
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'tiktok',
+                    label: 'TIKTOK',
+                    value: siteConfig.contactSection.tiktok || '@pajaipaikhao',
+                    url: siteConfig.contactSection.tiktokUrl,
+                    icon: (
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'phone',
+                    label: 'HOTLINE',
+                    value: siteConfig.contactSection.phone,
+                    url: siteConfig.contactSection.phoneUrl || (siteConfig.contactSection.phone ? `tel:${siteConfig.contactSection.phone.replace(/[^0-9+]/g, '')}` : ''),
+                    icon: <Phone size={20} />,
+                  },
+                  {
+                    id: 'email',
+                    label: 'EMAIL',
+                    value: siteConfig.contactSection.email,
+                    url: siteConfig.contactSection.emailUrl || (siteConfig.contactSection.email ? `mailto:${siteConfig.contactSection.email.trim()}` : ''),
+                    icon: <Mail size={20} />,
+                  },
+                  {
+                    id: 'pickup',
+                    label: 'จุดนัดพบหลัก',
+                    value: siteConfig.contactSection.pickup,
+                    url: siteConfig.contactSection.pickupUrl,
+                    icon: <MapPin size={20} />,
+                  },
+                ]
+                  .filter((ch) => ch.value && ch.value.trim() !== '')
+                  .map((ch) => {
+                    const hasLink = ch.url && ch.url.trim() !== '';
+                    const isExternal = hasLink && !ch.url.startsWith('tel:') && !ch.url.startsWith('mailto:') && !ch.url.startsWith('#');
+                    const Wrapper = hasLink ? 'a' : 'div';
+
+                    return (
+                      <Wrapper
+                        key={ch.id}
+                        href={hasLink ? ch.url.trim() : undefined}
+                        target={isExternal ? '_blank' : undefined}
+                        rel={isExternal ? 'noopener noreferrer' : undefined}
+                        className={`group flex items-center justify-between gap-3.5 rounded-[18px] bg-[#09090b]/60 p-4 border border-white/[0.06] transition-all duration-300 ${
+                          hasLink ? 'hover:border-[#f97316]/50 hover:bg-[#09090b] hover:-translate-y-0.5 cursor-pointer' : ''
+                        }`}
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div className="w-[42px] h-[42px] rounded-xl bg-[#f97316]/15 text-[#f97316] flex items-center justify-center shrink-0 transition-colors duration-300 group-hover:bg-[#f97316] group-hover:text-white">
+                            {ch.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[11px] font-semibold tracking-wider text-[#a1a1aa] uppercase">
+                              {ch.label}
+                            </div>
+                            <div className="font-bold text-[14.5px] text-white truncate group-hover:text-[#f97316] transition-colors">
+                              {ch.value}
+                            </div>
+                          </div>
+                        </div>
+                        {hasLink && (
+                          <ArrowUpRight
+                            size={16}
+                            className="text-zinc-500 group-hover:text-[#f97316] shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                          />
+                        )}
+                      </Wrapper>
+                    );
+                  })}
               </div>
             </div>
           </div>
@@ -1806,140 +2095,366 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* 02 ABOUT */}
-                  <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-3">
-                    <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
-                      02 // รู้จักกับเรา (About Us)
-                    </h3>
-                    <div>
-                      <label className="block text-xs text-zinc-400 mb-1">หัวข้อหลัก (Title)</label>
-                      <input
-                        type="text"
-                        value={siteConfig.aboutSection.title}
-                        onChange={(e) => updateSectionField('aboutSection', 'title', e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
-                      />
+                  {/* 02 ABOUT (แก้ไขได้ทุกจุด + รูปภาพ + เพิ่ม/ลบ Pillars) */}
+                  <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-4">
+                    <div className="border-b border-white/10 pb-3">
+                      <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
+                        02 // รู้จักกับเรา (About Us)
+                      </h3>
+                      <p className="text-xs text-zinc-400 mt-1 mb-0">แก้ไขหัวข้อ คำพูด รูปภาพประกอบ และเพิ่ม/ลบจุดเด่นของเราได้ทั้งหมด</p>
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-zinc-400 mb-1">ป้ายกำกับด้านบน (Tag)</label>
+                        <input
+                          type="text"
+                          value={siteConfig.aboutSection.tag || ''}
+                          onChange={(e) => updateSectionField('aboutSection', 'tag', e.target.value)}
+                          className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-zinc-400 mb-1">หัวข้อหลัก (Title)</label>
+                        <input
+                          type="text"
+                          value={siteConfig.aboutSection.title || ''}
+                          onChange={(e) => updateSectionField('aboutSection', 'title', e.target.value)}
+                          className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">คำโปรย (Description)</label>
+                      <label className="block text-xs text-zinc-400 mb-1">คำโปรยรอง (Description)</label>
                       <textarea
                         rows={2}
-                        value={siteConfig.aboutSection.desc}
+                        value={siteConfig.aboutSection.desc || ''}
                         onChange={(e) => updateSectionField('aboutSection', 'desc', e.target.value)}
                         className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs text-zinc-400 mb-1">เนื้อหาประวัติ (Story)</label>
-                      <textarea
-                        rows={3}
-                        value={siteConfig.aboutSection.storyText}
-                        onChange={(e) => updateSectionField('aboutSection', 'storyText', e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
-                      />
-                    </div>
-                  </div>
 
-                  {/* 03 SERVICES */}
-                  <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-3">
-                    <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
-                      03 // บริการอื่น ๆ (Other Services)
-                    </h3>
-                    <div>
-                      <label className="block text-xs text-zinc-400 mb-1">หัวข้อหลัก (Title)</label>
-                      <input
-                        type="text"
-                        value={siteConfig.servicesSection.title}
-                        onChange={(e) => updateSectionField('servicesSection', 'title', e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
-                      />
-                    </div>
-                    {siteConfig.servicesSection.items.map((srv, idx) => (
-                      <div key={srv.id || idx} className="rounded-xl border border-white/5 bg-[#121217] p-3.5 space-y-2">
-                        <input
-                          type="text"
-                          value={srv.title}
-                          onChange={(e) => {
-                            const updated = [...siteConfig.servicesSection.items];
-                            updated[idx] = { ...updated[idx], title: e.target.value };
-                            updateSectionField('servicesSection', 'items', updated);
-                          }}
-                          className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-1.5 text-sm font-semibold text-white"
-                        />
-                        <textarea
-                          rows={2}
-                          value={srv.desc}
-                          onChange={(e) => {
-                            const updated = [...siteConfig.servicesSection.items];
-                            updated[idx] = { ...updated[idx], desc: e.target.value };
-                            updateSectionField('servicesSection', 'items', updated);
-                          }}
-                          className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-1.5 text-xs text-zinc-300"
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* 05 CONTACT */}
-                  <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-3 mt-6">
-                    <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
-                      05 // ข้อมูลการติดต่อ (Contact Us)
-                    </h3>
-                    <div>
-                      <label className="block text-xs text-zinc-400 mb-1">หัวข้อหลัก (Title)</label>
-                      <input
-                        type="text"
-                        value={siteConfig.contactSection.title}
-                        onChange={(e) => updateSectionField('contactSection', 'title', e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-zinc-400 mb-1">ข้อความชวนคุยในกล่องติดต่อ</label>
-                      <input
-                        type="text"
-                        value={siteConfig.contactSection.boxTitle}
-                        onChange={(e) => updateSectionField('contactSection', 'boxTitle', e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
-                      />
-                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1">LINE Official</label>
+                        <label className="block text-xs text-zinc-400 mb-1">คำพูด Quote (ข้อความสีขาว)</label>
                         <input
                           type="text"
-                          value={siteConfig.contactSection.line}
-                          onChange={(e) => updateSectionField('contactSection', 'line', e.target.value)}
+                          value={siteConfig.aboutSection.quoteMain || ''}
+                          onChange={(e) => updateSectionField('aboutSection', 'quoteMain', e.target.value)}
                           className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1">เบอร์โทรศัพท์ (Hotline)</label>
+                        <label className="block text-xs text-zinc-400 mb-1">คำพูด Quote เน้นไฮไลต์ (ข้อความสีส้ม)</label>
                         <input
                           type="text"
-                          value={siteConfig.contactSection.phone}
-                          onChange={(e) => updateSectionField('contactSection', 'phone', e.target.value)}
+                          value={siteConfig.aboutSection.quoteHighlight || ''}
+                          onChange={(e) => updateSectionField('aboutSection', 'quoteHighlight', e.target.value)}
+                          className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-zinc-400 mb-1">เนื้อหาเรื่องราว / ประวัติ (Story Text)</label>
+                      <textarea
+                        rows={4}
+                        value={siteConfig.aboutSection.storyText || ''}
+                        onChange={(e) => updateSectionField('aboutSection', 'storyText', e.target.value)}
+                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white leading-relaxed"
+                      />
+                    </div>
+
+                    <ImageUploadField
+                      label="รูปภาพประกอบส่วนรู้จักกับเรา (อัปโหลดรูปจากเครื่อง หรือวาง URL)"
+                      value={siteConfig.aboutSection.featuredImage || ''}
+                      onChange={(val) => updateSectionField('aboutSection', 'featuredImage', val)}
+                      folder="about"
+                      maxWidth={1000}
+                    />
+
+                    <div>
+                      <label className="block text-xs text-zinc-400 mb-1">ข้อความบรรยายใต้ภาพ (Image Caption)</label>
+                      <input
+                        type="text"
+                        value={siteConfig.aboutSection.imageCaption || ''}
+                        onChange={(e) => updateSectionField('aboutSection', 'imageCaption', e.target.value)}
+                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+
+                    {/* ส่วนจัดการจุดเด่น (Pillars) */}
+                    <div className="pt-3 border-t border-white/10 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-[#f97316] uppercase tracking-wider">
+                          รายการหัวข้อจุดเด่น ({siteConfig.aboutSection.pillars?.length || 0} ข้อ)
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleAddPillar}
+                          className="flex items-center gap-1 rounded-lg bg-[#f97316] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#ea580c] cursor-pointer border-0"
+                        >
+                          <Plus size={14} /> เพิ่มจุดเด่น
+                        </button>
+                      </div>
+
+                      {(siteConfig.aboutSection.pillars || []).map((pillar, idx) => (
+                        <div key={pillar.id || idx} className="rounded-xl border border-white/10 bg-[#121217] p-3.5 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-zinc-300">จุดเด่นข้อที่ #{idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePillar(idx)}
+                              className="text-xs text-red-400 hover:text-red-300 bg-transparent border-0 cursor-pointer flex items-center gap-1"
+                            >
+                              <Trash2 size={13} /> ลบข้อนี้
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-4 gap-2.5">
+                            <div className="col-span-1">
+                              <label className="block text-[11px] text-zinc-400 mb-1">ลำดับ</label>
+                              <input
+                                type="text"
+                                value={pillar.num || ''}
+                                onChange={(e) => handlePillarChange(idx, 'num', e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-[#101015] px-2.5 py-1.5 text-sm text-white"
+                              />
+                            </div>
+                            <div className="col-span-3">
+                              <label className="block text-[11px] text-zinc-400 mb-1">หัวข้อจุดเด่น</label>
+                              <input
+                                type="text"
+                                value={pillar.title || ''}
+                                onChange={(e) => handlePillarChange(idx, 'title', e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-1.5 text-sm font-semibold text-white"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[11px] text-zinc-400 mb-1">รายละเอียด</label>
+                            <textarea
+                              rows={2}
+                              value={pillar.desc || ''}
+                              onChange={(e) => handlePillarChange(idx, 'desc', e.target.value)}
+                              className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-1.5 text-xs text-zinc-200"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 03 SERVICES (แก้ไขได้ทุกจุด + รูปภาพ + รายการ Bullet ย่อย) */}
+                  <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-4">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
+                          03 // บริการอื่น ๆ (Other Services)
+                        </h3>
+                        <p className="text-xs text-zinc-400 mt-1 mb-0">แก้ไขหัวข้อหลัก เพิ่ม/ลบบริการ รูปภาพ และรายละเอียดเพิ่มเติมได้ทั้งหมด</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddService}
+                        className="flex items-center gap-1.5 rounded-xl bg-[#f97316] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#ea580c] cursor-pointer border-0"
+                      >
+                        <Plus size={15} /> เพิ่มบริการใหม่
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-zinc-400 mb-1">ป้ายกำกับด้านบน (Tag)</label>
+                        <input
+                          type="text"
+                          value={siteConfig.servicesSection.tag || ''}
+                          onChange={(e) => updateSectionField('servicesSection', 'tag', e.target.value)}
                           className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1">จุดนัดพบหลัก</label>
+                        <label className="block text-xs text-zinc-400 mb-1">หัวข้อหลัก (Title)</label>
                         <input
                           type="text"
-                          value={siteConfig.contactSection.pickup}
-                          onChange={(e) => updateSectionField('contactSection', 'pickup', e.target.value)}
+                          value={siteConfig.servicesSection.title || ''}
+                          onChange={(e) => updateSectionField('servicesSection', 'title', e.target.value)}
+                          className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-zinc-400 mb-1">คำอธิบายส่วนบริการ (Description)</label>
+                      <textarea
+                        rows={2}
+                        value={siteConfig.servicesSection.desc || ''}
+                        onChange={(e) => updateSectionField('servicesSection', 'desc', e.target.value)}
+                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                      />
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      {(siteConfig.servicesSection.items || []).map((srv, idx) => (
+                        <div key={srv.id || idx} className="rounded-xl border border-white/10 bg-[#121217] p-4 space-y-3">
+                          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                            <span className="text-xs font-bold text-[#f97316]">บริการที่ #{idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteService(idx)}
+                              className="text-xs text-red-400 hover:text-red-300 bg-transparent border-0 cursor-pointer flex items-center gap-1"
+                            >
+                              <Trash2 size={13} /> ลบบริการนี้
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="md:col-span-1">
+                              <label className="block text-xs text-zinc-400 mb-1">ป้ายหมวดหมู่ (Tag)</label>
+                              <input
+                                type="text"
+                                value={srv.tag || ''}
+                                onChange={(e) => handleServiceChange(idx, 'tag', e.target.value)}
+                                placeholder="เช่น PRIVATE GROUP"
+                                className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <label className="block text-xs text-zinc-400 mb-1">ชื่อบริการ (Title)</label>
+                              <input
+                                type="text"
+                                value={srv.title || ''}
+                                onChange={(e) => handleServiceChange(idx, 'title', e.target.value)}
+                                className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm font-semibold text-white"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs text-zinc-400 mb-1">รายละเอียดหลัก (Description)</label>
+                            <textarea
+                              rows={3}
+                              value={srv.desc || ''}
+                              onChange={(e) => handleServiceChange(idx, 'desc', e.target.value)}
+                              className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm text-zinc-200 leading-relaxed"
+                            />
+                          </div>
+
+                          <ImageUploadField
+                            label="รูปภาพประกอบบริการนี้ (อัปโหลดจากเครื่อง หรือวาง URL)"
+                            value={srv.image || ''}
+                            onChange={(val) => handleServiceChange(idx, 'image', val)}
+                            folder="services"
+                            maxWidth={900}
+                          />
+
+                          {/* รายการรายละเอียดเพิ่มเติม (Bullets) */}
+                          <div className="pt-2 border-t border-white/5 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-semibold text-emerald-400">
+                                รายละเอียดเพิ่มเติม / จุดเด่นของบริการนี้ (Bullet points)
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => handleAddServiceBullet(idx)}
+                                className="text-xs font-bold text-[#f97316] hover:underline bg-transparent border-0 cursor-pointer flex items-center gap-1"
+                              >
+                                <Plus size={13} /> เพิ่มบรรทัดรายละเอียด
+                              </button>
+                            </div>
+                            {(srv.bullets || []).map((b, bIdx) => (
+                              <div key={bIdx} className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={b}
+                                  onChange={(e) => handleServiceBulletChange(idx, bIdx, e.target.value)}
+                                  className="flex-1 rounded-lg border border-white/10 bg-[#101015] px-3 py-1.5 text-xs text-white"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteServiceBullet(idx, bIdx)}
+                                  className="text-red-400 hover:text-red-300 bg-transparent border-0 cursor-pointer p-1"
+                                  title="ลบบรรทัดนี้"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 05 CONTACT (แก้ไขชื่อและลิงก์ Social Media ครบทุกช่องทาง) */}
+                  <div className="rounded-2xl border border-white/10 bg-[#181820] p-5 space-y-4 mt-6">
+                    <div className="border-b border-white/10 pb-3">
+                      <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
+                        05 // ข้อมูลการติดต่อ & ลิงก์ Social Media (Contact Us)
+                      </h3>
+                      <p className="text-xs text-zinc-400 mt-1 mb-0">
+                        ใส่ข้อความแสดงผลและวางลิงก์ (URL) ของแต่ละช่องทาง หากช่องทางไหนไม่ต้องการให้แสดงบนหน้าเว็บ ให้ลบข้อความฝั่งซ้ายออกได้เลยครับ
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-zinc-400 mb-1">หัวข้อหลัก (Title)</label>
+                        <input
+                          type="text"
+                          value={siteConfig.contactSection.title || ''}
+                          onChange={(e) => updateSectionField('contactSection', 'title', e.target.value)}
                           className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1">อีเมล (Email)</label>
+                        <label className="block text-xs text-zinc-400 mb-1">ข้อความชวนคุยในกล่องติดต่อ</label>
                         <input
                           type="text"
-                          value={siteConfig.contactSection.email}
-                          onChange={(e) => updateSectionField('contactSection', 'email', e.target.value)}
+                          value={siteConfig.contactSection.boxTitle || ''}
+                          onChange={(e) => updateSectionField('contactSection', 'boxTitle', e.target.value)}
                           className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
                         />
                       </div>
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      {[
+                        { label: 'LINE Official', textKey: 'line', urlKey: 'lineUrl', textPh: '@Pajaipaikhao', urlPh: 'https://lin.ee/xxxxxx' },
+                        { label: 'Facebook Page', textKey: 'facebook', urlKey: 'facebookUrl', textPh: 'พาใจไปเขา PaJaiPaiKhao', urlPh: 'https://facebook.com/pajaipaikhao' },
+                        { label: 'Instagram (IG)', textKey: 'instagram', urlKey: 'instagramUrl', textPh: 'pajaipaikhao', urlPh: 'https://instagram.com/pajaipaikhao' },
+                        { label: 'TikTok', textKey: 'tiktok', urlKey: 'tiktokUrl', textPh: '@pajaipaikhao', urlPh: 'https://tiktok.com/@pajaipaikhao' },
+                        { label: 'เบอร์โทรศัพท์ (Hotline)', textKey: 'phone', urlKey: 'phoneUrl', textPh: '093-791-9144', urlPh: 'tel:0937919144 (เว้นว่างได้ ระบบสร้างลิงก์โทรให้อัตโนมัติ)' },
+                        { label: 'อีเมล (Email)', textKey: 'email', urlKey: 'emailUrl', textPh: 'pajaipaikhao.dev@gmail.com', urlPh: 'mailto:pajaipaikhao.dev@gmail.com (เว้นว่างได้ ระบบสร้างให้อัตโนมัติ)' },
+                        { label: 'จุดนัดพบหลัก (Google Maps)', textKey: 'pickup', urlKey: 'pickupUrl', textPh: 'BTS หมอชิต', urlPh: 'https://maps.app.goo.gl/xxxxxx' },
+                      ].map((item) => (
+                        <div key={item.textKey} className="grid grid-cols-1 md:grid-cols-12 gap-2.5 rounded-xl border border-white/5 bg-[#121217] p-3">
+                          <div className="md:col-span-5">
+                            <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                              {item.label} (ชื่อที่แสดง)
+                            </label>
+                            <input
+                              type="text"
+                              value={siteConfig.contactSection[item.textKey] || ''}
+                              onChange={(e) => updateSectionField('contactSection', item.textKey, e.target.value)}
+                              placeholder={item.textPh}
+                              className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-1.5 text-sm text-white"
+                            />
+                          </div>
+                          <div className="md:col-span-7">
+                            <label className="block text-[11px] font-semibold text-[#f97316] mb-1">
+                              ลิงก์เมื่อคลิก (URL)
+                            </label>
+                            <input
+                              type="text"
+                              value={siteConfig.contactSection[item.urlKey] || ''}
+                              onChange={(e) => updateSectionField('contactSection', item.urlKey, e.target.value)}
+                              placeholder={item.urlPh}
+                              className="w-full rounded-lg border border-[#f97316]/30 bg-[#101015] px-3 py-1.5 text-sm text-white"
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
