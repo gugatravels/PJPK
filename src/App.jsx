@@ -19,11 +19,14 @@ import {
   Layers,
   Check,
   Lock,
-  BookOpen
+  BookOpen,
+  Upload,
+  Loader2
 } from 'lucide-react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const DISC = 46; 
 const BLOCK = 58; 
@@ -170,30 +173,130 @@ const INITIAL_SITE_CONFIG = {
   },
 };
 
-// --- Firebase Configuration & Safe Initialization ---
+// --- Firebase Configuration (โปรเจกต์ webpajai สำหรับเก็บภาพและข้อมูลเว็บหลัก) ---
 const userFirebaseConfig = {
-  apiKey: "AIzaSyCyT_8-1QV7KqL_2t-y3BM-8DKdKYDGuqE",
-  authDomain: "bookpajai.firebaseapp.com",
-  databaseURL: "https://bookpajai-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "bookpajai",
-  storageBucket: "bookpajai.firebasestorage.app",
-  messagingSenderId: "367823485461",
-  appId: "1:367823485461:web:d38bf3d0d358a8b5816c1c"
+  apiKey: "AIzaSyACc9AJtNY_iZYbP8c_itekoPKN68C0Lkg",
+  authDomain: "webpajai.firebaseapp.com",
+  databaseURL: "https://webpajai-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "webpajai",
+  storageBucket: "webpajai.firebasestorage.app",
+  messagingSenderId: "885378805538",
+  appId: "1:885378805538:web:2f0ebe506063007c763f7b"
 };
 
 let app = null;
 let auth = null;
 let db = null;
+let storage = null;
 
 try {
-  const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config
-    ? JSON.parse(__firebase_config)
-    : userFirebaseConfig;
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  app = !getApps().length ? initializeApp(userFirebaseConfig) : getApp();
   auth = getAuth(app);
   db = getFirestore(app);
+  storage = getStorage(app);
 } catch (err) {
   console.warn('Firebase initialization skipped or failed, running in local cache mode.');
+}
+
+// --- ฟังก์ชันบีบอัดภาพอัตโนมัติ (ช่วยให้โหลดไวและใช้เป็น Fallback ได้ทันที) ---
+const compressImageFile = (file, maxWidth = 1280, quality = 0.8) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const isPng = file.type === 'image/png';
+        const dataUrl = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', isPng ? undefined : quality);
+        resolve(dataUrl);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
+// --- ปุ่มอัปโหลดรูปภาพจากเครื่อง (รองรับทั้ง Firebase Storage + Smart Fallback) ---
+function ImageUploadField({ label, value, onChange, folder = 'uploads', maxWidth = 1280, placeholder = 'https://...' }) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      // 1. ลองอัปโหลดขึ้น Firebase Storage (webpajai.firebasestorage.app)
+      if (storage) {
+        try {
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const fileRef = storageRef(storage, `pajai_${folder}/${Date.now()}_${safeName}`);
+          await uploadBytes(fileRef, file);
+          const downloadUrl = await getDownloadURL(fileRef);
+          onChange(downloadUrl);
+          setUploading(false);
+          return;
+        } catch (storageErr) {
+          console.warn('Storage upload fallback to compressed data URL:', storageErr);
+        }
+      }
+      // 2. Fallback: บีบอัดภาพเก็บลงฐานข้อมูลโดยตรง (ทำงานได้ 100% แม้ยังไม่ได้ตั้งค่า Storage Rules)
+      const compressedDataUrl = await compressImageFile(file, maxWidth, 0.78);
+      onChange(compressedDataUrl);
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  return (
+    <div className="space-y-1.5">
+      {label && <label className="block text-xs font-semibold text-zinc-300">{label}</label>}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="text"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="flex-1 rounded-xl border border-white/10 bg-[#101015] px-3.5 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none"
+        />
+        <label
+          className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold text-white transition cursor-pointer shrink-0 border border-[#f97316]/40 ${
+            uploading ? 'bg-zinc-700 cursor-wait' : 'bg-[#f97316]/20 hover:bg-[#f97316] text-[#f97316] hover:text-white'
+          }`}
+        >
+          {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+          <span>{uploading ? 'กำลังอัปโหลด...' : 'อัปโหลดรูปภาพ'}</span>
+          <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" disabled={uploading} />
+        </label>
+      </div>
+      {value && (
+        <div className="flex items-center gap-3 pt-1">
+          <img
+            src={value}
+            alt="Preview"
+            className="h-12 w-20 rounded-lg object-cover border border-white/10 bg-black/40"
+          />
+          <span className="text-[11px] text-zinc-400 truncate max-w-xs">
+            {value.startsWith('data:image') ? 'อัปโหลดรูปภาพจากเครื่องแล้ว (พร้อมบันทึก)' : 'ลิงก์รูปภาพพร้อมใช้งาน'}
+          </span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // --- รหัสผ่านสำหรับเข้าระบบหลังบ้าน ---
@@ -1213,18 +1316,14 @@ export default function App() {
                     <h3 className="text-sm font-bold text-[#f97316] uppercase tracking-wider m-0">
                       เปลี่ยนรูปโลโก้ & ชื่อแบรนด์
                     </h3>
-                    <div>
-                      <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                        URL รูปโลโก้ (เว้นว่างไว้หากต้องการใช้โลโก้กราฟิก SVG ต้นฉบับ)
-                      </label>
-                      <input
-                        type="text"
-                        value={siteConfig.brand.logoImageUrl}
-                        onChange={(e) => updateSectionField('brand', 'logoImageUrl', e.target.value)}
-                        placeholder="https://example.com/my-logo.png"
-                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3.5 py-2.5 text-sm text-white focus:border-[#f97316] focus:outline-none"
-                      />
-                    </div>
+                    <ImageUploadField
+                      label="รูปโลโก้แบรนด์ (อัปโหลดไฟล์รูปจากเครื่อง หรือวาง URL — เว้นว่างไว้หากใช้โลโก้ SVG ต้นฉบับ)"
+                      value={siteConfig.brand.logoImageUrl}
+                      onChange={(val) => updateSectionField('brand', 'logoImageUrl', val)}
+                      folder="brand"
+                      maxWidth={500}
+                      placeholder="https://example.com/my-logo.png"
+                    />
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-zinc-300 mb-1.5">ชื่อแบรนด์ส่วนหน้า (สีขาว)</label>
@@ -1245,15 +1344,13 @@ export default function App() {
                         />
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-zinc-300 mb-1.5">URL รูปวอลเปเปอร์พื้นหลังหน้าแรก (ภูเขาหิมะ)</label>
-                      <input
-                        type="text"
-                        value={siteConfig.brand.heroWallpaper}
-                        onChange={(e) => updateSectionField('brand', 'heroWallpaper', e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-[#101015] px-3.5 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none"
-                      />
-                    </div>
+                    <ImageUploadField
+                      label="รูปวอลเปเปอร์พื้นหลังหน้าแรก (อัปโหลดรูปภูเขาจากเครื่อง หรือวาง URL)"
+                      value={siteConfig.brand.heroWallpaper}
+                      onChange={(val) => updateSectionField('brand', 'heroWallpaper', val)}
+                      folder="wallpapers"
+                      maxWidth={1600}
+                    />
                   </div>
 
                   <div className="rounded-2xl border border-[#f97316]/30 bg-[#181820] p-5 space-y-4">
@@ -1515,12 +1612,12 @@ export default function App() {
                           />
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-xs text-zinc-400 mb-1">URL รูปปกทริป</label>
-                          <input
-                            type="text"
+                          <ImageUploadField
+                            label="รูปปกทริป (กดอัปโหลดรูปภาพจากเครื่อง หรือวาง URL)"
                             value={trip.image}
-                            onChange={(e) => handleTripChange(trip.id, 'image', e.target.value)}
-                            className="w-full rounded-xl border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                            onChange={(val) => handleTripChange(trip.id, 'image', val)}
+                            folder="trips"
+                            maxWidth={1000}
                           />
                         </div>
                         <div className="md:col-span-2">
@@ -1599,12 +1696,12 @@ export default function App() {
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="md:col-span-2">
-                              <label className="block text-xs text-zinc-400 mb-1">URL รูปภาพปก</label>
-                              <input
-                                type="text"
+                              <ImageUploadField
+                                label="รูปภาพปกเรื่องเล่า (กดอัปโหลดรูปภาพจากเครื่อง หรือวาง URL)"
                                 value={item.image}
-                                onChange={(e) => handleGalleryChange(item.id, 'image', e.target.value)}
-                                className="w-full rounded-lg border border-white/10 bg-[#101015] px-3 py-2 text-sm text-white"
+                                onChange={(val) => handleGalleryChange(item.id, 'image', val)}
+                                folder="gallery"
+                                maxWidth={1200}
                               />
                             </div>
                             <div>
