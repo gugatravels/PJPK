@@ -198,8 +198,8 @@ try {
   console.warn('Firebase initialization skipped or failed, running in local cache mode.');
 }
 
-// --- ฟังก์ชันบีบอัดภาพอัตโนมัติ (ช่วยให้โหลดไวและใช้เป็น Fallback ได้ทันที) ---
-const compressImageFile = (file, maxWidth = 1280, quality = 0.8) => {
+// --- ฟังก์ชันบีบอัดภาพอัตโนมัติ (ปรับขนาดให้เหมาะสมกับ Firestore 100% ไม่เกินลิมิต 1MB) ---
+const compressImageFile = (file, maxWidth = 900, quality = 0.72) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -218,8 +218,8 @@ const compressImageFile = (file, maxWidth = 1280, quality = 0.8) => {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        const isPng = file.type === 'image/png';
-        const dataUrl = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', isPng ? undefined : quality);
+        // แปลงเป็น JPEG คุณภาพสูงที่มีขนาดไฟล์กะทัดรัด ताकिเซฟลง Firestore ได้แน่นอน
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
         resolve(dataUrl);
       };
       img.onerror = (err) => reject(err);
@@ -229,33 +229,38 @@ const compressImageFile = (file, maxWidth = 1280, quality = 0.8) => {
 };
 
 // --- ปุ่มอัปโหลดรูปภาพจากเครื่อง (รองรับทั้ง Firebase Storage + Smart Fallback) ---
-function ImageUploadField({ label, value, onChange, folder = 'uploads', maxWidth = 1280, placeholder = 'https://...' }) {
+function ImageUploadField({ label, value, onChange, folder = 'uploads', maxWidth = 900, placeholder = 'https://...' }) {
   const [uploading, setUploading] = useState(false);
+  const [uploadInfo, setUploadInfo] = useState('');
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setUploadInfo('');
     try {
-      // 1. ลองอัปโหลดขึ้น Firebase Storage (webpajai.firebasestorage.app)
+      // 1. ลองอัปโหลดขึ้น Firebase Storage เข้าโฟลเดอร์ pajai/... ให้ตรงกับ Storage Rules
       if (storage) {
         try {
           const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-          const fileRef = storageRef(storage, `pajai_${folder}/${Date.now()}_${safeName}`);
+          const fileRef = storageRef(storage, `pajai/${folder}/${Date.now()}_${safeName}`);
           await uploadBytes(fileRef, file);
           const downloadUrl = await getDownloadURL(fileRef);
           onChange(downloadUrl);
+          setUploadInfo('✅ อัปโหลดขึ้น Firebase Storage สำเร็จ! (อย่าลืมกดปุ่มบันทึกด้านล่าง)');
           setUploading(false);
           return;
         } catch (storageErr) {
           console.warn('Storage upload fallback to compressed data URL:', storageErr);
         }
       }
-      // 2. Fallback: บีบอัดภาพเก็บลงฐานข้อมูลโดยตรง (ทำงานได้ 100% แม้ยังไม่ได้ตั้งค่า Storage Rules)
-      const compressedDataUrl = await compressImageFile(file, maxWidth, 0.78);
+      // 2. Fallback: บีบอัดภาพให้ขนาดพอเหมาะเพื่อบันทึกลง Firestore Database โดยตรง
+      const compressedDataUrl = await compressImageFile(file, maxWidth, 0.72);
       onChange(compressedDataUrl);
+      setUploadInfo('เตรียมรูปภาพพร้อมแล้ว! กดปุ่ม "บันทึกข้อมูลลง Cloud" ด้านล่างเพื่อเซฟขึ้น Firebase');
     } catch (err) {
       console.error('Upload failed:', err);
+      setUploadInfo('เกิดข้อผิดพลาดในการอ่านไฟล์รูปภาพ');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -279,7 +284,7 @@ function ImageUploadField({ label, value, onChange, folder = 'uploads', maxWidth
           }`}
         >
           {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-          <span>{uploading ? 'กำลังอัปโหลด...' : 'อัปโหลดรูปภาพ'}</span>
+          <span>{uploading ? 'กำลังประมวลผล...' : 'อัปโหลดรูปภาพ'}</span>
           <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" disabled={uploading} />
         </label>
       </div>
@@ -290,8 +295,8 @@ function ImageUploadField({ label, value, onChange, folder = 'uploads', maxWidth
             alt="Preview"
             className="h-12 w-20 rounded-lg object-cover border border-white/10 bg-black/40"
           />
-          <span className="text-[11px] text-zinc-400 truncate max-w-xs">
-            {value.startsWith('data:image') ? 'อัปโหลดรูปภาพจากเครื่องแล้ว (พร้อมบันทึก)' : 'ลิงก์รูปภาพพร้อมใช้งาน'}
+          <span className="text-[11px] text-emerald-400 truncate max-w-md">
+            {uploadInfo || (value.startsWith('data:image') ? 'รูปภาพจากเครื่องพร้อมบันทึกขึ้น Firebase' : 'ลิงก์รูปภาพพร้อมใช้งาน')}
           </span>
         </div>
       )}
@@ -470,8 +475,11 @@ export default function App() {
   const [adminTab, setAdminTab] = useState('brand');
   const [saveToast, setSaveToast] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
+  const [isSavingCloud, setIsSavingCloud] = useState(false);
+  const [cloudSyncState, setCloudSyncState] = useState('connecting'); // 'connected' | 'error' | 'connecting'
+  const [cloudErrorDetail, setCloudErrorDetail] = useState('');
 
-  // --- Auth & Sync ---
+  // --- Auth & Sync (เชื่อมต่อ Firestore ทันทีโดยไม่บล็อกหากไม่ได้เปิด Anonymous Auth) ---
   useEffect(() => {
     if (!auth) return;
     const initAuth = async () => {
@@ -482,7 +490,7 @@ export default function App() {
           await signInAnonymously(auth);
         }
       } catch (error) {
-        // กรณีไม่ได้เปิด Anonymous Auth ใน Firebase Console ระบบจะสลับมาใช้ LocalStorage อัตโนมัติโดยไม่พัง
+        // ไม่ต้องบล็อกการทำงานหากยังไม่ได้เปิด Anonymous Auth ใน Console
       }
     };
     initAuth();
@@ -493,24 +501,39 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // ซิงค์ข้อมูลจาก Firestore ทันทีที่เปิดเว็บ (ไม่รอตัวแปร user)
   useEffect(() => {
-    if (!user || !db) return; 
+    if (!db) {
+      setCloudSyncState('error');
+      setCloudErrorDetail('ไม่พบการเชื่อมต่อฐานข้อมูล Firestore');
+      return;
+    }
     
     const configDocRef = doc(db, 'pajai_landing_settings', 'mainConfig');
-    const unsubscribe = onSnapshot(configDocRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const cloudData = docSnap.data();
-        setSiteConfig(cloudData);
-        localStorage.setItem('pajai_siteConfig_cache', JSON.stringify(cloudData));
-      } else {
-        setDoc(configDocRef, INITIAL_SITE_CONFIG).catch(() => {});
+    const unsubscribe = onSnapshot(
+      configDocRef,
+      (docSnap) => {
+        setCloudSyncState('connected');
+        setCloudErrorDetail('');
+        if (docSnap.exists()) {
+          const cloudData = docSnap.data();
+          setSiteConfig(cloudData);
+          localStorage.setItem('pajai_siteConfig_cache', JSON.stringify(cloudData));
+        } else {
+          setDoc(configDocRef, INITIAL_SITE_CONFIG).catch((err) => {
+            console.warn('Initial Firestore creation error:', err);
+          });
+        }
+      },
+      (error) => {
+        console.warn('Firestore sync error:', error);
+        setCloudSyncState('error');
+        setCloudErrorDetail(error.code || error.message || 'ไม่สามารถเข้าถึงฐานข้อมูลได้');
       }
-    }, () => {
-      // หากติด Permission Error ระบบจะใช้ข้อมูลจาก Local Cache แทนโดยไม่แสดง Error รบกวนหน้าเว็บ
-    });
+    );
 
     return () => unsubscribe();
-  }, [user]);
+  }, []);
 
   // --- Functions ---
   const smoothScrollTo = (targetId) => {
@@ -697,26 +720,42 @@ export default function App() {
   const triggerSaveNotification = (message = 'อัปเดตข้อมูลเรียบร้อยแล้ว!') => {
     setSaveStatus(message);
     setSaveToast(true);
-    setTimeout(() => setSaveToast(false), 3000);
+    setTimeout(() => setSaveToast(false), 5000);
   };
 
   const handleSaveToCloud = async () => {
-    // บันทึกลง LocalStorage ทันทีเพื่อให้หน้าเว็บจำค่าไว้เสมอ
-    localStorage.setItem('pajai_siteConfig_cache', JSON.stringify(siteConfig));
+    setIsSavingCloud(true);
+    // 1. บันทึกสำรองลงในเครื่องก่อนเสมอ
+    try {
+      localStorage.setItem('pajai_siteConfig_cache', JSON.stringify(siteConfig));
+    } catch (e) {
+      console.warn('LocalStorage quota exceeded:', e);
+    }
     
-    if (user && db) {
+    // 2. บันทึกขึ้น Firebase Firestore (โปรเจกต์ webpajai) โดยตรง
+    if (db) {
       try {
         const configDocRef = doc(db, 'pajai_landing_settings', 'mainConfig');
-        await setDoc(configDocRef, siteConfig);
-        triggerSaveNotification('บันทึกข้อมูลลง Cloud & เครื่องเรียบร้อยแล้ว!');
-        setTimeout(() => setAdminOpen(false), 1200);
-        return;
+        await setDoc(configDocRef, {
+          ...siteConfig,
+          lastUpdated: new Date().toISOString()
+        });
+        setCloudSyncState('connected');
+        setCloudErrorDetail('');
+        triggerSaveNotification('✅ บันทึกขึ้น Firebase (webpajai) สำเร็จเรียบร้อยแล้ว!');
       } catch (error) {
-        // กรณีติด Firestore Rules จะบันทึกไว้ในเครื่องให้แทนโดยไม่ค้าง
+        console.error('Firebase Save Error:', error);
+        setCloudSyncState('error');
+        const reason = error?.code === 'permission-denied'
+          ? 'ติดสิทธิ์ Permission Denied (กรุณาเปิด Rules ใน Firebase Console เมนู Firestore Database)'
+          : (error?.message || 'เกิดข้อผิดพลาดในการส่งข้อมูลขึ้น Firebase');
+        setCloudErrorDetail(reason);
+        triggerSaveNotification(`⚠️ ผิดพลาด: ${reason}`);
       }
+    } else {
+      triggerSaveNotification('⚠️ ผิดพลาด: ไม่พบการเชื่อมต่อ Firebase');
     }
-    triggerSaveNotification('บันทึกข้อมูลลงเครื่องเรียบร้อยแล้ว! (รอตั้งค่า Rules บน Cloud)');
-    setTimeout(() => setAdminOpen(false), 1200);
+    setIsSavingCloud(false);
   };
 
   const MeridianArrow = () => (
@@ -1259,8 +1298,24 @@ export default function App() {
                   <Settings size={18} />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-white m-0">ระบบจัดการหลังบ้าน (Admin CMS)</h2>
-                  <p className="text-xs text-zinc-400 m-0">แก้ไขโลโก้ ข้อความ ทริป และลิงก์ระบบจองที่นั่งแบบ Real-time</p>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-bold text-white m-0">ระบบจัดการหลังบ้าน (Admin CMS)</h2>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                        cloudSyncState === 'connected'
+                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                          : cloudSyncState === 'error'
+                          ? 'bg-red-500/15 text-red-400 border border-red-500/30'
+                          : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                      }`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${cloudSyncState === 'connected' ? 'bg-emerald-400' : cloudSyncState === 'error' ? 'bg-red-400' : 'bg-amber-400'}`} />
+                      {cloudSyncState === 'connected' ? 'เชื่อมต่อ Firebase (webpajai) แล้ว' : cloudSyncState === 'error' ? 'ยังไม่ได้เปิดสิทธิ์ Firestore Rules' : 'กำลังเช็คการเชื่อมต่อ...'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400 m-0">
+                    {cloudErrorDetail ? `สาเหตุ: ${cloudErrorDetail}` : 'แก้ไขโลโก้ รูปภาพ ข้อความ ทริป และบันทึกขึ้น Firebase แบบ Real-time'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -1349,7 +1404,7 @@ export default function App() {
                       value={siteConfig.brand.heroWallpaper}
                       onChange={(val) => updateSectionField('brand', 'heroWallpaper', val)}
                       folder="wallpapers"
-                      maxWidth={1600}
+                      maxWidth={1100}
                     />
                   </div>
 
@@ -1617,7 +1672,7 @@ export default function App() {
                             value={trip.image}
                             onChange={(val) => handleTripChange(trip.id, 'image', val)}
                             folder="trips"
-                            maxWidth={1000}
+                            maxWidth={850}
                           />
                         </div>
                         <div className="md:col-span-2">
@@ -1701,7 +1756,7 @@ export default function App() {
                                 value={item.image}
                                 onChange={(val) => handleGalleryChange(item.id, 'image', val)}
                                 folder="gallery"
-                                maxWidth={1200}
+                                maxWidth={900}
                               />
                             </div>
                             <div>
@@ -1898,16 +1953,18 @@ export default function App() {
                     <Check size={15} /> {saveStatus}
                   </span>
                 ) : (
-                  <span>การแก้ไขทั้งหมดจะถูกบันทึกลงฐานข้อมูลและในเครื่อง</span>
+                  <span>เมื่ออัปโหลดรูปหรือแก้ไขเสร็จแล้ว กดปุ่มสีส้มด้านขวาเพื่อเซฟขึ้น Firebase</span>
                 )}
               </div>
               <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={handleSaveToCloud}
-                  className="rounded-xl bg-[#f97316] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#ea580c] transition cursor-pointer border-0"
+                  disabled={isSavingCloud}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#f97316] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#ea580c] transition cursor-pointer border-0 disabled:opacity-60"
                 >
-                  บันทึกข้อมูลลง Cloud
+                  {isSavingCloud && <Loader2 size={14} className="animate-spin" />}
+                  <span>{isSavingCloud ? 'กำลังบันทึกขึ้น Firebase...' : 'บันทึกข้อมูลลง Cloud'}</span>
                 </button>
               </div>
             </div>
