@@ -2033,7 +2033,7 @@ export default function App() {
                     onClick={() => setModalState({ isOpen: false, type: null, data: null })}
                     className="rounded-full bg-white/10 hover:bg-[#f97316] px-5 py-2 text-xs font-semibold text-white transition cursor-pointer border-0"
                   >
-                    ปิดหน้าต่างอ่าน
+                    ปิดหน้าต่างอ่านนะ
                   </button>
                 </div>
               </div>
